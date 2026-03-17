@@ -22,5 +22,6 @@ async function probar() {
     }
 }
 
+export default probar;
 // ESTA LÍNEA ES LA QUE HACE QUE TODO CORRA:
 probar();
