@@ -1,0 +1,300 @@
+-- ==============================================================================
+-- 1. LIMPIEZA TOTAL (Reset del Sistema)
+-- ==============================================================================
+DROP VIEW IF EXISTS Vista_Codigo_Trazabilidad;
+DROP TRIGGER IF EXISTS tr_firma_transporte ON Historial_Transporte_Lotes;
+DROP TRIGGER IF EXISTS tr_firma_detalle_aplicacion ON Detalle_Aplicacion_Insumos;
+DROP TRIGGER IF EXISTS tr_firma_bitacora ON Bitacora_Actividades;
+DROP TRIGGER IF EXISTS tr_firma_recepcion ON Recepcion_Insumos;
+DROP TRIGGER IF EXISTS al_registrar_usuario ON auth.users;
+DROP FUNCTION IF EXISTS public.autofirmar_registro();
+DROP FUNCTION IF EXISTS public.crear_perfil();
+
+DROP TABLE IF EXISTS Historial_Transporte_Lotes CASCADE;
+DROP TABLE IF EXISTS Transportes CASCADE;
+DROP TABLE IF EXISTS Clientes_Destinos CASCADE;
+DROP TABLE IF EXISTS Lotes_Cosecha CASCADE;
+DROP TABLE IF EXISTS Detalle_Aplicacion_Insumos CASCADE;
+DROP TABLE IF EXISTS Bitacora_Actividades CASCADE;
+DROP TABLE IF EXISTS Secciones_Cultivo CASCADE;
+DROP TABLE IF EXISTS Unidades_Produccion CASCADE;
+DROP TABLE IF EXISTS Recepcion_Insumos CASCADE;
+DROP TABLE IF EXISTS Insumos_Agricolas CASCADE;
+DROP TABLE IF EXISTS Proveedores CASCADE;
+DROP TABLE IF EXISTS Perfiles_Usuarios CASCADE;
+
+-- ==============================================================================
+-- 2. TABLAS BASE (Identidad y Catálogos)
+-- ==============================================================================
+
+CREATE TABLE Perfiles_Usuarios (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    nombre VARCHAR(100),
+    -- Se incluye 'Auditor' como rol oficial de solo lectura profunda
+    rol VARCHAR(50) CHECK (rol IN ('Administrador', 'Recepcion', 'Produccion', 'Embarques', 'Transporte', 'Auditor'))
+);
+
+CREATE TABLE Proveedores (
+    id_proveedor SERIAL PRIMARY KEY,
+    nombre_empresa VARCHAR(150),
+    contacto_ventas VARCHAR(100),
+    correo_contacto VARCHAR(100),
+    direccion TEXT,
+    telefono VARCHAR(20)
+);
+
+CREATE TABLE Insumos_Agricolas (
+    id_insumo SERIAL PRIMARY KEY,
+    nombre_comercial VARCHAR(100),
+    ingrediente_activo VARCHAR(100),
+    formulacion VARCHAR(50),
+    presentacion VARCHAR(50),
+    registro_cofepris VARCHAR(30)
+);
+
+CREATE TABLE Recepcion_Insumos (
+    id_recepcion SERIAL PRIMARY KEY,
+    id_proveedor INT REFERENCES Proveedores(id_proveedor),
+    id_insumo_agricola INT REFERENCES Insumos_Agricolas(id_insumo),
+    fecha_recepcion DATE DEFAULT CURRENT_DATE,
+    cantidad DECIMAL(10,2),
+    lote_insumo VARCHAR(50),
+    fecha_caducidad DATE,
+    numero_factura VARCHAR(30),
+    responsable_recepcion VARCHAR(100)
+);
+
+-- ==============================================================================
+-- 3. ESTRUCTURA DE PRODUCCIÓN (El origen)
+-- ==============================================================================
+
+CREATE TABLE Unidades_Produccion (
+    id_unidad SERIAL PRIMARY KEY,
+    nombre_unidad VARCHAR(100),
+    pais VARCHAR(50) DEFAULT 'México',
+    estado VARCHAR(50),
+    municipio VARCHAR(50),
+    codigo_postal VARCHAR(10),
+    direccion_predio TEXT,
+    latitud DECIMAL(10,8),
+    longitud DECIMAL(11,8),
+    certificaciones TEXT,
+    codigo_estado VARCHAR(2),   -- Ejemplo: '21' para Puebla
+    codigo_municipio VARCHAR(3), -- Ejemplo: '114'
+    numero_up VARCHAR(2)         -- Ejemplo: '01'
+);
+
+CREATE TABLE Secciones_Cultivo (
+    id_seccion SERIAL PRIMARY KEY,
+    id_unidad INT REFERENCES Unidades_Produccion(id_unidad),
+    nombre_seccion VARCHAR(50),
+    cultivo VARCHAR(100),
+    variedad VARCHAR(100),
+    superficie_hectareas DECIMAL(8,2),
+    fecha_siembra DATE,
+    fecha_estimada_cosecha DATE,
+    codigo_seccion VARCHAR(2),
+    codigo_cultivo VARCHAR(2),
+    codigo_variedad VARCHAR(2)
+);
+
+-- ==============================================================================
+-- 4. BITÁCORAS Y COSECHA (Operación)
+-- ==============================================================================
+
+CREATE TABLE Bitacora_Actividades (
+    id_actividad SERIAL PRIMARY KEY,
+    id_seccion INT REFERENCES Secciones_Cultivo(id_seccion),
+    fecha DATE DEFAULT CURRENT_DATE,
+    tipo_actividad VARCHAR(50),
+    equipo_aplicacion VARCHAR(100),
+    lavado BOOLEAN DEFAULT FALSE,
+    desinfeccion BOOLEAN DEFAULT FALSE,
+    responsable_aplicacion VARCHAR(100),
+    observaciones TEXT
+);
+
+CREATE TABLE Detalle_Aplicacion_Insumos (
+    id_detalle SERIAL PRIMARY KEY,
+    id_actividad INT REFERENCES Bitacora_Actividades(id_actividad),
+    id_insumo INT REFERENCES Insumos_Agricolas(id_insumo),
+    dosis_aplicada DECIMAL(10,2),
+    unidad_dosis VARCHAR(10),
+    responsable_mezcla VARCHAR(100)
+);
+
+CREATE TABLE Lotes_Cosecha (
+    id_lote SERIAL PRIMARY KEY,
+    id_seccion INT REFERENCES Secciones_Cultivo(id_seccion),
+    fecha_cosecha DATE DEFAULT CURRENT_DATE,
+    fecha_juliana INT,           -- Se calcula en el backend o vía trigger
+    anio_cosecha INT,
+    cantidad_cajas INT,
+    peso_kg DECIMAL(10,2),
+    uso_cultivo VARCHAR(50),
+    calidad VARCHAR(20),
+    calibre VARCHAR(20),
+    color VARCHAR(30),
+    observaciones_calidad TEXT,
+    codigo_trazabilidad VARCHAR(50) -- Código generado
+);
+
+-- ==============================================================================
+-- 5. LOGÍSTICA Y DESTINO (Trazabilidad hacia adelante)
+-- ==============================================================================
+
+CREATE TABLE Clientes_Destinos (
+    id_cliente SERIAL PRIMARY KEY,
+    nombre_empresa VARCHAR(150),
+    representante_legal VARCHAR(100),
+    pais VARCHAR(50),
+    estado VARCHAR(50),
+    municipio VARCHAR(50),
+    direccion TEXT,
+    telefono VARCHAR(20),
+    correo_electronico VARCHAR(100),
+    marca_comercial VARCHAR(100),
+    mercado_destino VARCHAR(50)
+);
+
+CREATE TABLE Transportes (
+    id_transporte SERIAL PRIMARY KEY,
+    tipo_vehiculo VARCHAR(50),
+    placas VARCHAR(20),
+    capacidad_kg DECIMAL(10,2),
+    capacidad_cajas INT,
+    temperatura_min DECIMAL(5,2),
+    temperatura_max DECIMAL(5,2),
+    propietario VARCHAR(100),
+    certificado_sanitario BOOLEAN DEFAULT FALSE,
+    ultima_revision DATE,
+    responsable_asignado VARCHAR(100),
+    aseguranza VARCHAR(50)
+);
+
+CREATE TABLE Historial_Transporte_Lotes (
+    id_historial SERIAL PRIMARY KEY,
+    id_transporte INT REFERENCES Transportes(id_transporte),
+    id_lote INT REFERENCES Lotes_Cosecha(id_lote),
+    id_cliente INT REFERENCES Clientes_Destinos(id_cliente),
+    fecha_salida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_llegada TIMESTAMP,
+    cajas_transportadas INT,
+    peso_transportado_kg DECIMAL(10,2),
+    temperatura_salida DECIMAL(5,2),
+    temperatura_llegada DECIMAL(5,2),
+    responsable_carga VARCHAR(100),
+    responsable_entrega VARCHAR(100),
+    documento_entrega VARCHAR(50),
+    incidencias TEXT,
+    entregado_completo BOOLEAN DEFAULT FALSE,
+    firma_digital VARCHAR(200),
+    vehiculo_lavado_desinfectado BOOLEAN DEFAULT FALSE
+);
+
+-- ==============================================================================
+-- 6. VISTA DE TRAZABILIDAD (Consulta Maestra)
+-- ==============================================================================
+
+CREATE VIEW Vista_Codigo_Trazabilidad AS
+SELECT 
+    l.id_lote,
+    l.fecha_cosecha,
+    u.nombre_unidad,
+    '750' || u.codigo_estado || u.codigo_municipio || u.numero_up || 
+    s.codigo_cultivo || s.codigo_variedad || s.codigo_seccion || 
+    LPAD(l.fecha_juliana::text, 3, '0') || RIGHT(l.anio_cosecha::text, 2) AS codigo_trazabilidad_oficial
+FROM 
+    Lotes_Cosecha l
+JOIN 
+    Secciones_Cultivo s ON l.id_seccion = s.id_seccion
+JOIN 
+    Unidades_Produccion u ON s.id_unidad = u.id_unidad;
+
+-- ==============================================================================
+-- 7. AUTOMATIZACIÓN (Triggers de Identidad)
+-- ==============================================================================
+
+-- 7.1 Crear perfil al registrarse en Auth
+CREATE OR REPLACE FUNCTION public.crear_perfil()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.Perfiles_Usuarios (id, rol, nombre) 
+  VALUES (new.id, 'Produccion', COALESCE(new.raw_user_meta_data->>'nombre', 'Usuario Nuevo')); 
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER al_registrar_usuario
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.crear_perfil();
+
+-- 7.2 Autofirma: Captura el nombre del usuario activo para las bitácoras
+CREATE OR REPLACE FUNCTION public.autofirmar_registro()
+RETURNS trigger AS $$
+DECLARE
+    nombre_real VARCHAR(100);
+BEGIN
+    SELECT nombre INTO nombre_real FROM public.Perfiles_Usuarios WHERE id = auth.uid();
+    
+    -- Manejo de nombres de tabla en minúsculas (estándar de Postgres)
+    IF TG_TABLE_NAME = 'recepcion_insumos' THEN NEW.responsable_recepcion := nombre_real;
+    ELSIF TG_TABLE_NAME = 'bitacora_actividades' THEN NEW.responsable_aplicacion := nombre_real;
+    ELSIF TG_TABLE_NAME = 'detalle_aplicacion_insumos' THEN NEW.responsable_mezcla := nombre_real;
+    ELSIF TG_TABLE_NAME = 'historial_transporte_lotes' THEN
+        IF TG_OP = 'INSERT' THEN NEW.responsable_carga := nombre_real;
+        ELSIF TG_OP = 'UPDATE' THEN NEW.responsable_entrega := nombre_real;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER tr_firma_recepcion BEFORE INSERT ON Recepcion_Insumos FOR EACH ROW EXECUTE PROCEDURE public.autofirmar_registro();
+CREATE TRIGGER tr_firma_bitacora BEFORE INSERT ON Bitacora_Actividades FOR EACH ROW EXECUTE PROCEDURE public.autofirmar_registro();
+CREATE TRIGGER tr_firma_detalle_aplicacion BEFORE INSERT ON Detalle_Aplicacion_Insumos FOR EACH ROW EXECUTE PROCEDURE public.autofirmar_registro();
+CREATE TRIGGER tr_firma_transporte BEFORE INSERT OR UPDATE ON Historial_Transporte_Lotes FOR EACH ROW EXECUTE PROCEDURE public.autofirmar_registro();
+
+-- ==============================================================================
+-- 8. SEGURIDAD (RLS - Row Level Security)
+-- ==============================================================================
+
+-- Habilitar RLS en todas las tablas
+ALTER TABLE Perfiles_Usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Proveedores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Insumos_Agricolas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Recepcion_Insumos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Unidades_Produccion ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Secciones_Cultivo ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Bitacora_Actividades ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Detalle_Aplicacion_Insumos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Lotes_Cosecha ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Clientes_Destinos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Transportes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Historial_Transporte_Lotes ENABLE ROW LEVEL SECURITY;
+
+-- 8.1 Políticas de Lectura (Auditores y Usuarios autenticados ven todo)
+CREATE POLICY "Lectura universal" ON Perfiles_Usuarios FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Proveedores FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Insumos_Agricolas FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Recepcion_Insumos FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Unidades_Produccion FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Secciones_Cultivo FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Bitacora_Actividades FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Detalle_Aplicacion_Insumos FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Lotes_Cosecha FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Clientes_Destinos FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Transportes FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Historial_Transporte_Lotes FOR SELECT TO authenticated USING (true);
+
+-- 8.2 Políticas de Escritura (El Auditor queda fuera por diseño)
+CREATE POLICY "Escritura Prov" ON Proveedores FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Recepcion')));
+CREATE POLICY "Escritura Ins" ON Insumos_Agricolas FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Recepcion')));
+CREATE POLICY "Escritura Recep" ON Recepcion_Insumos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Recepcion'));
+CREATE POLICY "Escritura Campo" ON Bitacora_Actividades FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
+CREATE POLICY "Escritura Deta" ON Detalle_Aplicacion_Insumos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
+CREATE POLICY "Escritura Lote" ON Lotes_Cosecha FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
+CREATE POLICY "Escritura Clie" ON Clientes_Destinos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Embarques')));
+CREATE POLICY "Escritura Viaje" ON Historial_Transporte_Lotes FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Embarques'));
+CREATE POLICY "Firma Entrega" ON Historial_Transporte_Lotes FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Transporte'));
+CREATE POLICY "Escritura UP" ON Unidades_Produccion FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
