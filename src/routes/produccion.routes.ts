@@ -16,6 +16,6 @@ router.post('/bitacora', crearBitacora);
 // Rutas de Producción: Lotes de Cosecha
 // ============================================
 router.post('/lotes', crearLote);
-router.get('/lotes', obtenerLotes);
+router.get('/getLotes', obtenerLotes);
 
 export default router;

@@ -4,21 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/header.css">
+    <style>
+        table,tr,td{
+            border: 2px solid black;
+        }
+    </style>
     <title>Indice</title>
 </head>
 <body>
     <!-- header -->
     <div class="headerContainer">
         <img src="../static/Logo trazabilidad.svg" alt="Logo">
-        <div class="headerLinkContainer">
-            <!-- TODO: ver porque no quiere funcionar la clase currentPage -->
+        <!-- <div class="headerLinkContainer">
+             TODO: ver porque no quiere funcionar la clase currentPage
             <a class="currentPage" href="">Realizar registro</a>
             <a href="">Ver registros</a>
-        </div>
+        </div> -->
     </div>
     <!-- fin header -->
-    
-
+    <h1 id="titleContainer"></h1>
+    <h2 id="uniProduccion">Unidad de produccion</h2>
+    <table id="Mytable">
+        <th>
+            <tr>
+                <td>ID lote</td>
+                <td>ID Sección</td>
+                <td>Fecha de cosecha</td>
+                <td>Cantidad de cajas</td>
+                <td>Peso (kg)</td>
+                <td>Uso cultivo</td>
+                <td>Calidad</td>
+                <td>Observaciones calidad</td>
+                <td>Calibre</td>
+                <td>Codigo trazabilidad</td>
+            </tr>
+        </th>
+    </table>
+    <h2 id="seccionCultivo">Seccion de cultivo</h2>
+    <table></table>
+    <h2 id="lotesCosecha">Lotes de cosecha</h2>
+    <table></table>
+    <h2 id="historialTransporte">Historial de transporte</h2>
+    <table></table>
+    <h2 id="Destino">Destino</h2>
+    <table></table>
+    <!-- Unidad de produccion
+    Seccion de cultivo
+    lotes de cosecha
+    historial transporte
+        transporte
+    cliente destino -->
 
 
     <!-- Scripts js -->
