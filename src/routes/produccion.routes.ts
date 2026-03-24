@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { 
   crearBitacora, 
   crearLote, 
-  obtenerLotes 
+  obtenerLotes,
+  obtenerLotePorID,
 } from '../controller/produccion.controller';
 
 const router = Router();
@@ -17,5 +18,6 @@ router.post('/bitacora', crearBitacora);
 // ============================================
 router.post('/lotes', crearLote);
 router.get('/getLotes', obtenerLotes);
+router.get('/getLote/:id', obtenerLotePorID);
 
 export default router;

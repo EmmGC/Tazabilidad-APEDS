@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { 
   registrarUPService, 
   obtenerUPsService, 
+  obtenerUPporIDService,
   registrarSeccionService, 
   obtenerSeccionesService 
 } from '../service/up.service';
@@ -32,6 +33,17 @@ export const crearUP = async (req: any, res: Response) => {
 export const obtenerUPs = async (req: any, res: Response) => {
   try {
     const catalogo = await obtenerUPsService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtenerUPs:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerUPporID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerUPporIDService(Number(id));
     return res.status(200).json(catalogo);
   } catch (error: any) {
     console.error("[CONTROLLER] Error en obtenerUPs:", error.message);

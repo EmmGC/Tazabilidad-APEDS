@@ -96,3 +96,19 @@ export const obtenerLotesService = async () => {
 
   return data;
 };
+
+export const obtenerLotePorIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('lotes_cosecha')
+    .select(`
+      *,
+      secciones_cultivo ( nombre_seccion, cultivo, variedad )
+    `)
+    .eq("id_lote", number);
+
+  if (error) {
+    throw new Error(`Error al obtener Lotes: ${error.message}`);
+  }
+
+  return data;
+};

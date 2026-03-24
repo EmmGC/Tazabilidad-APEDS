@@ -29,7 +29,7 @@ app.use('/api/reportes', reportesRoutes)
 // Health check
 app.get('/ping', (req, res) => {
   res.json({ message: 'pong' })
-  probar
+  //probar
 })
 
 if (process.env.NODE_ENV !== 'test') {
