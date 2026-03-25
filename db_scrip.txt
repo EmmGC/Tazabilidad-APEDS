@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS Unidades_Produccion CASCADE;
 DROP TABLE IF EXISTS Recepcion_Insumos CASCADE;
 DROP TABLE IF EXISTS Insumos_Agricolas CASCADE;
 DROP TABLE IF EXISTS Proveedores CASCADE;
+DROP TABLE IF EXISTS Perfiles_Bot CASCADE;
 DROP TABLE IF EXISTS Perfiles_Usuarios CASCADE;
 
 -- ==============================================================================
@@ -30,8 +31,13 @@ DROP TABLE IF EXISTS Perfiles_Usuarios CASCADE;
 CREATE TABLE Perfiles_Usuarios (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     nombre VARCHAR(100),
-    -- Se incluye 'Auditor' como rol oficial de solo lectura profunda
-    rol VARCHAR(50) CHECK (rol IN ('Administrador', 'Recepcion', 'Produccion', 'Embarques', 'Transporte', 'Auditor'))
+    rol VARCHAR(50) CHECK (rol IN ('Administrador'))
+);
+
+CREATE TABLE Perfiles_Bot (
+    telegram_id BIGINT PRIMARY KEY,
+    nombre VARCHAR(100),
+    tabla_asignada VARCHAR(50) CHECK (tabla_asignada IN ('Recepcion_Insumos', 'Bitacora_Actividades', 'Detalle_Aplicacion_Insumos', 'Lotes_Cosecha', 'Historial_Transporte_Lotes'))
 );
 
 CREATE TABLE Proveedores (
@@ -261,6 +267,7 @@ CREATE TRIGGER tr_firma_transporte BEFORE INSERT OR UPDATE ON Historial_Transpor
 
 -- Habilitar RLS en todas las tablas
 ALTER TABLE Perfiles_Usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Perfiles_Bot ENABLE ROW LEVEL SECURITY;
 ALTER TABLE Proveedores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE Insumos_Agricolas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE Recepcion_Insumos ENABLE ROW LEVEL SECURITY;
@@ -275,6 +282,7 @@ ALTER TABLE Historial_Transporte_Lotes ENABLE ROW LEVEL SECURITY;
 
 -- 8.1 Políticas de Lectura (Auditores y Usuarios autenticados ven todo)
 CREATE POLICY "Lectura universal" ON Perfiles_Usuarios FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Lectura universal" ON Perfiles_Bot FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Lectura universal" ON Proveedores FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Lectura universal" ON Insumos_Agricolas FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Lectura universal" ON Recepcion_Insumos FOR SELECT TO authenticated USING (true);
@@ -287,14 +295,18 @@ CREATE POLICY "Lectura universal" ON Clientes_Destinos FOR SELECT TO authenticat
 CREATE POLICY "Lectura universal" ON Transportes FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Lectura universal" ON Historial_Transporte_Lotes FOR SELECT TO authenticated USING (true);
 
--- 8.2 Políticas de Escritura (El Auditor queda fuera por diseño)
-CREATE POLICY "Escritura Prov" ON Proveedores FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Recepcion')));
-CREATE POLICY "Escritura Ins" ON Insumos_Agricolas FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Recepcion')));
-CREATE POLICY "Escritura Recep" ON Recepcion_Insumos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Recepcion'));
-CREATE POLICY "Escritura Campo" ON Bitacora_Actividades FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
-CREATE POLICY "Escritura Deta" ON Detalle_Aplicacion_Insumos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
-CREATE POLICY "Escritura Lote" ON Lotes_Cosecha FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Produccion'));
-CREATE POLICY "Escritura Clie" ON Clientes_Destinos FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol IN ('Administrador', 'Embarques')));
-CREATE POLICY "Escritura Viaje" ON Historial_Transporte_Lotes FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Embarques'));
-CREATE POLICY "Firma Entrega" ON Historial_Transporte_Lotes FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Transporte'));
-CREATE POLICY "Escritura UP" ON Unidades_Produccion FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+-- 8.2 Políticas de Escritura (Solo Administrador puede escribir desde la app frontal)
+-- Nota: La Edge Function del bot inserta usando SERVICE_ROLE_KEY, por lo que ignora estas reglas y siempre puede insertar.
+CREATE POLICY "Escritura universal Admin" ON Proveedores FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Insumos_Agricolas FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Recepcion_Insumos FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Bitacora_Actividades FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Detalle_Aplicacion_Insumos FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Lotes_Cosecha FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Clientes_Destinos FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Historial_Transporte_Lotes FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Unidades_Produccion FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Secciones_Cultivo FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Transportes FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Escritura universal Admin" ON Perfiles_Bot FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));
+CREATE POLICY "Admin Bot" ON Perfiles_Bot FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));

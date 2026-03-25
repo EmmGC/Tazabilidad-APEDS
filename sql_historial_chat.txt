@@ -1,0 +1,16 @@
+-- ==============================================================================
+-- CREACIÓN DE TABLA DE MEMORIA CONVERSACIONAL PARA BOT TELEGRAM
+-- ==============================================================================
+
+-- 1. Crear la tabla Historial_Chat_Bot
+CREATE TABLE IF NOT EXISTS Historial_Chat_Bot (
+    telegram_id BIGINT PRIMARY KEY REFERENCES Perfiles_Bot(telegram_id) ON DELETE CASCADE,
+    historial JSONB DEFAULT '[]'::jsonb
+);
+
+-- 2. Habilitar Seguridad de Nivel de Fila (RLS)
+ALTER TABLE Historial_Chat_Bot ENABLE ROW LEVEL SECURITY;
+
+-- 3. Crear política para que solo el Administrador pueda leerla desde la app (aunque su uso principal será desde el bot con Service Key)
+DROP POLICY IF EXISTS "Admin Bot History" ON Historial_Chat_Bot;
+CREATE POLICY "Admin Bot History" ON Historial_Chat_Bot FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM Perfiles_Usuarios WHERE id = auth.uid() AND rol = 'Administrador'));

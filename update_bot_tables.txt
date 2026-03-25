@@ -1,0 +1,27 @@
+-- ==============================================================================
+-- ACTUALIZACIÓN DE RESTRICCIONES PARA PERFILES_BOT
+-- 
+-- Este script tiene un único propósito: modificar la tabla Perfiles_Bot 
+-- en una base de datos de producción existente para prohibir que el bot de 
+-- Telegram tenga acceso a tablas administrativas/catálogos, limitándolo 
+-- estrictamente a las 5 tablas de transacciones de campo.
+-- ==============================================================================
+
+-- 1. Eliminar la restricción/check actual si existe
+ALTER TABLE Perfiles_Bot DROP CONSTRAINT IF EXISTS perfiles_bot_tabla_asignada_check;
+
+-- 2. Asegurarse de que no existan bots actualmente asignados a tablas prohibidas
+-- (Si existen, se forzarán temporalmente a una tabla por defecto, o puedes borrarlos)
+UPDATE Perfiles_Bot 
+SET tabla_asignada = 'Recepcion_Insumos' 
+WHERE tabla_asignada NOT IN ('Recepcion_Insumos', 'Bitacora_Actividades', 'Detalle_Aplicacion_Insumos', 'Lotes_Cosecha', 'Historial_Transporte_Lotes');
+
+-- 3. Aplicar la nueva restricción estricta
+ALTER TABLE Perfiles_Bot ADD CONSTRAINT perfiles_bot_tabla_asignada_check 
+CHECK (tabla_asignada IN (
+    'Recepcion_Insumos', 
+    'Bitacora_Actividades', 
+    'Detalle_Aplicacion_Insumos', 
+    'Lotes_Cosecha', 
+    'Historial_Transporte_Lotes'
+));
