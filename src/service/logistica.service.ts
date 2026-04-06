@@ -123,9 +123,21 @@ export const obtenerEmbarquesService = async () => {
 
 export const obtenerEmbarquesPorIDService = async (number:number) => {
   const { data, error } = await supabase
-    .from('historial_transporte_lotes')
-    .select(`*`)
-    .eq("id_cliente", number)
+  .from('historial_transporte_lotes')
+  .select(`
+    id_transporte,
+    id_lote,
+    cajas_transportadas,
+    fecha_salida,
+    fecha_llegada,
+    peso_transportado_kg,
+    temperatura_salida,
+    temperatura_llegada,
+    incidencias,
+    entregado_completo,
+    vehiculo_lavado_desinfectado
+  `)
+  .eq('id_cliente', number);
 
   if (error) throw new Error(`Error al obtener Embarques: ${error.message}`);
   return data;
