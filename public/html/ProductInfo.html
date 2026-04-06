@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/ProductInfo.css">
+    <style>
+        table,
+        tr,
+        td {
+            border: 2px solid black;
+        }
+    </style>
+    <title>Indice</title>
+</head>
+
+<body>
+    <!-- header -->
+    <div class="headerContainer">
+        <img src="../static/Logo trazabilidad.svg" alt="Logo">
+        <!-- <div class="headerLinkContainer">
+             TODO: ver porque no quiere funcionar la clase currentPage
+            <a class="currentPage" href="">Realizar registro</a>
+            <a href="">Ver registros</a>
+        </div> -->
+    </div>
+    <!-- fin header -->
+    <div id="loadingScreen">
+        <span class="loader"></span>
+    </div>
+
+    <h1 id="titleContainer"></h1>
+    <div id="tablasContainer">
+
+        <h2>Cliente final</h2>
+        <table id="clienteTable">
+
+        </table>
+        <h2>Embarque</h2>
+        <table id="embarqueTable">
+
+        </table>
+        <h2>Transporte</h2>
+        <table id="transporteTable">
+
+        </table>
+        <h2>Lote de cosecha</h2>
+        <table id="lotCoseTable">
+
+        </table>
+        <h2>Seccion de cultivo</h2>
+        <table id="seccionCultivoTable">
+
+        </table>
+        <h2>Unidad de produccion</h2>
+        <table id="uniProductTable">
+
+        </table>
+        <h2>Bitacora de actividades</h2>
+        <table id="bitActTable">
+
+        </table>
+        <h2>Aplicacion de insumos</h2>
+        <table id="detAplicInsumosTable">
+        </table>
+
+        <h2>Informacion del proveedor</h2>
+        <table id="recepInsumosTable">
+
+        </table>
+    </div>
+    <!-- Scripts js -->
+    <script src="../JS/ProductInfo.js"></script>
+</body>
+
+</html>

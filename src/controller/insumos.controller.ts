@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { registrarInsumoService, obtenerCatologoInsumosService, InsumoData } from '../service/insumos.service';
+import { registrarInsumoService, obtenerCatologoInsumosService, obtenerInsumosUsadosPorID, InsumoData } from '../service/insumos.service';
 
 /**
  * POST: Crea un nuevo registro de Insumo Agrícola
@@ -45,6 +45,7 @@ export const crearInsumo = async (req: any, res: Response) => {
   }
 };
 
+
 /**
  * GET: Devuelve la lista de Insumos
  */
@@ -57,3 +58,15 @@ export const obtenerInsumos = async (req: any, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const obtenerInsumosUsados = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerInsumosUsadosPorID(Number(id));
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtenerInsumos:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+

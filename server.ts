@@ -41,9 +41,9 @@ if (process.env.NODE_ENV !== 'test') {
 // Archivos staticos para front
 app.use(express.static(path.join(__dirname, 'public')));
 // Front
-app.get('/:id/index.html', (req, res) => {
+app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
-  res.sendFile(path.join(__dirname, 'public', 'html','Index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
 
 export default app

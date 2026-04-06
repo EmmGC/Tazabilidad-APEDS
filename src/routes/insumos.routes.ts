@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { checkRole } from '../middleware/role.middleware';
-import { crearInsumo, obtenerInsumos } from '../controller/insumos.controller';
+import { crearInsumo, obtenerInsumos, obtenerInsumosUsados } from '../controller/insumos.controller';
 
 const router = Router();
 
+router.get('/getInsumosPorID/:id', obtenerInsumosUsados)
 // GET: Cualquier usuario autenticado puede ver el catálogo (Alineado con tu política "Lectura universal")
 router.get('/', authMiddleware, obtenerInsumos);
 

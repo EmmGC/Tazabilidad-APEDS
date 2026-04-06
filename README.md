@@ -30,6 +30,7 @@ PORT=3001
 SUPABASE_URL=tu_url_de_supabase_aqui
 SUPABASE_ANON_KEY=tu_anon_key_de_supabase_aqui
 ```
+Pidele el documento a alguien dentro del proyecto
 
 ### 2. Instalar Dependencias
 
