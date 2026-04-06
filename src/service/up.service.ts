@@ -28,6 +28,19 @@ export const obtenerUPsService = async () => {
   return data;
 };
 
+export const obtenerUPporIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('unidades_produccion')
+    .select('*')
+    .eq("id_unidad", number)
+
+  if (error) {
+    throw new Error(`Error al obtener UPs: ${error.message}`);
+  }
+
+  return data;
+};
+
 export const registrarSeccionService = async (data: SeccionCultivoData) => {
   const { data: result, error } = await supabase
     .from('secciones_cultivo')
@@ -51,7 +64,6 @@ export const obtenerSeccionesService = async (id_unidad: number) => {
     `)
     .eq('id_unidad', id_unidad)
     .order('id_seccion', { ascending: true });
-
   if (error) {
     throw new Error(`Error al obtener Secciones: ${error.message}`);
   }

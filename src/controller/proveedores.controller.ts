@@ -3,7 +3,8 @@ import {
   registrarProveedorService, 
   obtenerProveedoresService, 
   registrarRecepcionService, 
-  obtenerRecepcionesService 
+  obtenerRecepcionesService,
+  obtenerInfoProvePorIDService
 } from '../service/proveedores.service';
 import { ProveedorData, RecepcionInsumoData } from '../types/proveedores.types';
 
@@ -30,6 +31,17 @@ export const crearProveedor = async (req: any, res: Response) => {
 export const obtenerProveedores = async (req: any, res: Response) => {
   try {
     const catalogo = await obtenerProveedoresService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtenerProveedores:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerInfoProvePorID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerInfoProvePorIDService(Number(id));
     return res.status(200).json(catalogo);
   } catch (error: any) {
     console.error("[CONTROLLER] Error en obtenerProveedores:", error.message);

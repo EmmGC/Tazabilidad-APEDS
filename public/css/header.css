@@ -1,0 +1,40 @@
+body{
+    margin: 0px;
+}
+
+.headerContainer{
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: #526d82;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+}
+.headerContainer img{
+    padding: 10px;
+    width: 90px;
+}
+
+.headerLinkContainer{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
+.headerLinkContainer a{
+    text-decoration: none;
+    font-size: 21px;
+    color: white;
+    transition: all 0.4s ease-in-out;
+    padding: 30px;
+}
+.headerLinkContainer a:hover{
+    background-color: white;
+    color: black;
+}
+
+.currentPage{
+    font-weight: bold;
+    text-decoration: underline;
+}

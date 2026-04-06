@@ -12,6 +12,7 @@ import probar from './src/ping'
 dotenv.config()
 
 const app = express()
+const path = require('path')
 const PORT = process.env.PORT || 3001
 
 // Middleware
@@ -29,7 +30,7 @@ app.use('/api/reportes', reportesRoutes)
 // Health check (Puede ir antes o después de estáticos, pero antes de la ruta '/')
 app.get('/ping', (req, res) => {
   res.json({ message: 'pong' })
-  probar
+  //probar
 })
 
 // Servir archivos estáticos y la página de Login (después de todas las APIs)
@@ -43,5 +44,13 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Server running on port ${PORT}`)
   })
 }
+
+// Archivos staticos para front
+app.use(express.static(path.join(__dirname, 'public')));
+// Front
+app.get('/ProductInfo/:id', (req, res) => {
+  const { id } = req.params; 
+  res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
+});
 
 export default app

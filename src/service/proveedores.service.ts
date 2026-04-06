@@ -28,6 +28,26 @@ export const obtenerProveedoresService = async () => {
   return data;
 };
 
+export const obtenerInfoProvePorIDService = async (number: number) => {
+  const { data, error } = await supabase
+  .from('recepcion_insumos')
+  .select(`
+    fecha_recepcion,
+    lote_insumo,
+    fecha_caducidad,
+    numero_factura,
+    responsable_recepcion,
+    proveedores ( nombre_empresa )
+  `)
+  .eq('id_insumo_agricola', number);
+
+  if (error) {
+    throw new Error(`Error al obtener Proveedores: ${error.message}`);
+  }
+
+  return data;
+};
+
 export const registrarRecepcionService = async (data: RecepcionInsumoData) => {
   const { data: result, error } = await supabase
     .from('recepcion_insumos')

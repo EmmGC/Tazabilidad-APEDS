@@ -3,7 +3,8 @@ import {
   crearUP, 
   obtenerUPs, 
   crearSeccion, 
-  obtenerSecciones 
+  obtenerSecciones,
+  obtenerUPporID
 } from '../controller/up.controller';
 // import { requireAuth } from '../middleware/auth.middleware'; // Opcional, dependiendo de cómo manejes la auth
 
@@ -15,7 +16,8 @@ const router = Router();
 
 // TODO: Agregar middleware de autenticación/RBAC cuando esté listo
 router.post('/unidades', crearUP);
-router.get('/unidades', obtenerUPs);
+router.get('/getUnidades', obtenerUPs);
+router.get('/getUnidadesPorID/:id', obtenerUPporID);
 
 // ============================================
 // Rutas de Identidad: Secciones y Cultivos

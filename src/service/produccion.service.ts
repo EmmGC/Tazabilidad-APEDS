@@ -9,6 +9,21 @@ import {
 // 1. Bitácoras y Aplicaciones
 // ==========================================
 
+export const getBitacoraPorIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('bitacora_actividades')
+    .select(`
+      *
+    `)
+    .eq("id_seccion", number);
+
+  if (error) {
+    throw new Error(`Error al obtener Bitacora: ${error.message}`);
+  }
+
+  return data;
+};
+
 export const registrarBitacoraService = async (data: BitacoraActividadData, detallesInsumos?: DetalleAplicacionInsumoData[]) => {
   // 1. Insertar la bitácora
   const { data: bitacora, error: errorBitacora } = await supabase
@@ -89,6 +104,36 @@ export const obtenerLotesService = async () => {
       secciones_cultivo ( nombre_seccion, cultivo, variedad )
     `)
     .order('fecha_cosecha', { ascending: false });
+
+  if (error) {
+    throw new Error(`Error al obtener Lotes: ${error.message}`);
+  }
+
+  return data;
+};
+
+export const obtenerLotePorIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('lotes_cosecha')
+    .select(`
+      *
+    `)
+    .eq("id_lote", number);
+
+  if (error) {
+    throw new Error(`Error al obtener Lotes: ${error.message}`);
+  }
+
+  return data;
+};
+
+export const getSeccionCultivoPorIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('secciones_cultivo')
+    .select(`
+      *
+    `)
+    .eq("id_seccion", number);
 
   if (error) {
     throw new Error(`Error al obtener Lotes: ${error.message}`);

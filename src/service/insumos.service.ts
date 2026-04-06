@@ -41,3 +41,21 @@ export const obtenerCatologoInsumosService = async () => {
 
   return data;
 };
+export const obtenerInsumosUsadosPorID = async (number: number) => {
+  const { data, error } = await supabase
+  .from('detalle_aplicacion_insumos')
+  .select(`
+    id_insumo,
+    dosis_aplicada,
+    unidad_dosis,
+    responsable_mezcla,
+    insumos_agricolas ( nombre_comercial )
+  `)
+  .eq('id_actividad', number);
+
+  if (error) {
+    throw new Error(`Error en BD al ver insumos usados: ${error.message}`);
+  }
+
+  return data;
+};

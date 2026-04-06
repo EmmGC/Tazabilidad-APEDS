@@ -3,7 +3,8 @@ import {
   crearProveedor, 
   obtenerProveedores, 
   crearRecepcion, 
-  obtenerRecepciones 
+  obtenerRecepciones ,
+  obtenerInfoProvePorID
 } from '../controller/proveedores.controller';
 
 const router = Router();
@@ -13,6 +14,7 @@ const router = Router();
 // ============================================
 router.post('/proveedores', crearProveedor);
 router.get('/proveedores', obtenerProveedores);
+router.get('/getInfoProvePorID/:id', obtenerInfoProvePorID);
 
 // ============================================
 // Rutas de Insumos: Recepción de Insumos
