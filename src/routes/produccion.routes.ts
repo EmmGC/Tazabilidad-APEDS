@@ -4,6 +4,7 @@ import {
   crearLote, 
   obtenerLotes,
   obtenerLotePorID,
+  getSeccionCultivoPorID,
 } from '../controller/produccion.controller';
 
 const router = Router();
@@ -18,6 +19,10 @@ router.post('/bitacora', crearBitacora);
 // ============================================
 router.post('/lotes', crearLote);
 router.get('/getLotes', obtenerLotes);
-router.get('/getLote/:id', obtenerLotePorID);
+router.get('/getLote/:id', obtenerLotePorID); 
+// ============================================
+// Rutas de Producción: Divisiones de cultivo
+// ============================================
+router.get('/getSeccionCultivoPorID/:id', getSeccionCultivoPorID);
 
 export default router;

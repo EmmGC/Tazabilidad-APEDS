@@ -1,10 +1,11 @@
-const id = window.location.pathname.split('/')[1];
-console.log(id)
+let id = window.location.pathname.split('/')[1];
+let idTransporte = 0;
 
 const title = document.getElementById('titleContainer');
 title.innerHTML = "Informacion del producto " + id;
 //Tablas en el documento
 const clienteTable = document.getElementById('clienteTable');
+const embarqueTable = document.getElementById('embarqueTable');
 const transporteTable = document.getElementById('transporteTable');
 const lotCosechaTable = document.getElementById('lotCoseTable');
 const seccionCultivoTable = document.getElementById('seccionCultivoTable');
@@ -45,20 +46,48 @@ function populateTable(table, data) {
     });
 }
 
-const testJson = [{
-    "id_unidad": 5,
-    "nombre_unidad": "Finca El Sol",
-    "pais": "México",
-    "estado": "Puebla",
-    "municipio": "Atlixco",
-    "codigo_postal": "74200",
-    "direccion_predio": "Carretera 1 Sur",
-    "latitud": null,
-    "longitud": null,
-    "certificaciones": null,
-    "codigo_estado": "21",
-    "codigo_municipio": "114",
-    "numero_up": "01"
-  }]
+fetch("/api/logistica-envios/getClientesPorID/"+id)
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_cliente;
+        populateTable(clienteTable, data[0]);
+        
+        return fetch("/api/logistica-envios/getEmbarquesPorID/" + id);
+    })
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_lote;
+        idTransporte = data[0].id_transporte;
+        populateTable(embarqueTable, data[0]);
 
-populateTable(proveedoresTable, testJson[0]);
+        // ✅ Second fetch goes HERE, now idTransporte is guaranteed to exist
+        return fetch("/api/logistica-envios/getTransportesPorID/" + idTransporte);
+    })
+    .then(res => res.json())
+    .then(data => {
+        populateTable(transporteTable, data[0]);
+
+        return fetch("/api/logistica-envios/getLotePorID/" + id);
+    })
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_seccion;
+        populateTable(lotCosechaTable, data[0]);
+
+        return fetch("/api/produccion/getSeccionCultivoPorID/" + id);
+    })
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_unidad;
+        populateTable(seccionCultivoTable, data[0]);
+
+        return fetch("/api/up/getUnidadesPorID/"+id);
+    })
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_seccion;
+        populateTable(uniProductTable, data[0]);
+    })
+    .catch(error => {
+        console.error(error);
+    });

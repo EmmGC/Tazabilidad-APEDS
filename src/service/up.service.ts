@@ -33,7 +33,6 @@ export const obtenerUPporIDService = async (number: number) => {
     .from('unidades_produccion')
     .select('*')
     .eq("id_unidad", number)
-    .order('id_unidad', { ascending: true });
 
   if (error) {
     throw new Error(`Error al obtener UPs: ${error.message}`);

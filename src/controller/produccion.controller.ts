@@ -3,7 +3,8 @@ import {
   registrarBitacoraService, 
   registrarLoteCosechaService, 
   obtenerLotesService,
-  obtenerLotePorIDService
+  obtenerLotePorIDService,
+  getSeccionCultivoPorIDService
 } from '../service/produccion.service';
 import { BitacoraActividadData, LoteCosechaData } from '../types/produccion.types';
 
@@ -64,6 +65,17 @@ export const obtenerLotePorID = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const catalogo = await obtenerLotePorIDService(Number(id));
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtenerLotes:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getSeccionCultivoPorID = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await getSeccionCultivoPorIDService(Number(id));
     return res.status(200).json(catalogo);
   } catch (error: any) {
     console.error("[CONTROLLER] Error en obtenerLotes:", error.message);

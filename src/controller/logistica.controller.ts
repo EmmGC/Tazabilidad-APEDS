@@ -2,11 +2,15 @@ import { Response } from 'express';
 import { 
   registrarClienteService, 
   obtenerClientesService,
+  obtenerClientesPorIDService,
   registrarTransporteService,
   obtenerTransportesService,
+  obtenerTransportePorIDService,
   registrarEmbarqueService,
   actualizarLlegadaEmbarqueService,
-  obtenerEmbarquesService
+  obtenerEmbarquesService,
+  obtenerEmbarquesPorIDService,
+  obtenerLotesPorIDService
 } from '../service/logistica.service';
 import { 
   ClienteDestinoData, 
@@ -35,6 +39,16 @@ export const obtenerClientes = async (req: any, res: Response) => {
   }
 };
 
+export const obtenerClientesPorID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerClientesPorIDService(id);
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 export const crearTransporte = async (req: any, res: Response) => {
   try {
     const data: TransporteData = req.body;
@@ -50,6 +64,16 @@ export const crearTransporte = async (req: any, res: Response) => {
 export const obtenerTransportes = async (req: any, res: Response) => {
   try {
     const catalogo = await obtenerTransportesService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerTransportesPorID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerTransportePorIDService(id);
     return res.status(200).json(catalogo);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
@@ -88,6 +112,26 @@ export const registrarLlegadaEmbarque = async (req: any, res: Response) => {
 export const obtenerEmbarques = async (req: any, res: Response) => {
   try {
     const catalogo = await obtenerEmbarquesService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerEmbarquesPorID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerEmbarquesPorIDService(id);
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerLotesPorID = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const catalogo = await obtenerLotesPorIDService(id);
     return res.status(200).json(catalogo);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });

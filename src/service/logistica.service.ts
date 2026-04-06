@@ -29,6 +29,18 @@ export const obtenerClientesService = async () => {
   return data;
 };
 
+export const obtenerClientesPorIDService = async (numero: number) => {
+  const { data, error } = await supabase
+    .from('clientes_destinos')
+    .select('*')
+    .eq("id_cliente", numero)
+
+  if (error) throw new Error(`Error al obtener Clientes: ${error.message}`);
+  return data;
+};
+
+
+
 // ==========================================
 // 2. Transportes
 // ==========================================
@@ -48,6 +60,16 @@ export const obtenerTransportesService = async () => {
     .from('transportes')
     .select('*')
     .order('placas', { ascending: true });
+
+  if (error) throw new Error(`Error al obtener Transportes: ${error.message}`);
+  return data;
+};
+
+export const obtenerTransportePorIDService = async (number:number) => {
+  const { data, error } = await supabase
+    .from('transportes')
+    .select('*')
+    .eq("id_transporte", number)
 
   if (error) throw new Error(`Error al obtener Transportes: ${error.message}`);
   return data;
@@ -94,6 +116,26 @@ export const obtenerEmbarquesService = async () => {
       clientes_destinos ( nombre_empresa, mercado_destino )
     `)
     .order('fecha_salida', { ascending: false });
+
+  if (error) throw new Error(`Error al obtener Embarques: ${error.message}`);
+  return data;
+};
+
+export const obtenerEmbarquesPorIDService = async (number:number) => {
+  const { data, error } = await supabase
+    .from('historial_transporte_lotes')
+    .select(`*`)
+    .eq("id_cliente", number)
+
+  if (error) throw new Error(`Error al obtener Embarques: ${error.message}`);
+  return data;
+};
+
+export const obtenerLotesPorIDService = async (number:number) => {
+  const { data, error } = await supabase
+    .from('lotes_cosecha')
+    .select(`*`)
+    .eq("id_lote", number)
 
   if (error) throw new Error(`Error al obtener Embarques: ${error.message}`);
   return data;
