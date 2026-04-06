@@ -18,12 +18,16 @@ const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') || '')
 const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN') || ''
 
 // Función auxiliar para enviar mensajes a Telegram
-async function sendTelegramMessage(chatId: number, text: string) {
+async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`
+  const body: any = { chat_id: chatId, text }
+  if (replyMarkup) {
+    body.reply_markup = replyMarkup
+  }
   await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify(body),
   })
 }
 
@@ -80,7 +84,22 @@ Deno.serve(async (req: Request) => {
   let update: any = {}
   try {
     update = await req.json()
-    const message = update.message
+    let message = update.message
+    let callbackQueryId = null
+
+    if (update.callback_query) {
+      message = update.callback_query.message
+      message.text = update.callback_query.data
+      message.from = update.callback_query.from
+      callbackQueryId = update.callback_query.id
+      
+      // Quitar el estado de "cargando" del botón en Telegram
+      await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: callbackQueryId }),
+      })
+    }
 
     if (!message || !message.text || !message.from) {
       return new Response('OK', { status: 200 })
@@ -164,8 +183,9 @@ Deno.serve(async (req: Request) => {
 
       CÓMO ACTUAR:
       1. Si faltan datos importantes obligatorios de la lista (ej. cantidad, proveedor, insumo), tu "accion_interna" es "PREGUNTAR" y tu "mensaje_para_telegram" debe pedir amablemente los datos faltantes.
-      2. Si ya tienes TODOS los datos necesarios pero el usuario aún no te ha confirmado que están correctos, tu "accion_interna" es "CONFIRMAR". En tu "mensaje_para_telegram" debes mostrar una lista o resumen muy claro de lo que juntaste y preguntarle explicítamente al usuario "¿Está correcto? ¿Puedo proceder a guardarlo?".
-      3. Si el usuario te acaba de responder afirmativamente (sí, ok, dale, correcto) a tu pregunta de confirmación anterior, entonces y SOLO ENTONCES tu "accion_interna" será "INSERTAR". Tu "mensaje_para_telegram" puede ser "Procesando registro...".
+      2. Si ya tienes TODOS los datos necesarios pero el usuario aún no te ha confirmado que están correctos, tu "accion_interna" es "CONFIRMAR". En tu "mensaje_para_telegram" debes mostrar una lista o resumen muy claro de lo que juntaste y PREGUNTAR si es correcto (sin decirles que respondan sí o no, ya que verán botones abajo).
+      3. Si el usuario te acaba de enviar la respuesta exacta "CONFIRMAR_SI", entonces y SOLO ENTONCES tu "accion_interna" será "INSERTAR". Tu "mensaje_para_telegram" puede ser "Procesando registro...".
+      4. Si el usuario te acaba de enviar la respuesta exacta "CONFIRMAR_NO", tu "accion_interna" será "PREGUNTAR" y tu "mensaje_para_telegram" debe preguntar amablemente qué datos quieren corregir.
       
       IMPORTANTE: Sigue la conversación natural. Acumula los datos en "datos_recolectados" a lo largo de los mensajes.
     `
@@ -201,7 +221,19 @@ Deno.serve(async (req: Request) => {
 
     // 4. Enviar respuesta conversacional al humano
     if (mensaje_para_telegram && accion_interna !== "INSERTAR") {
-      await sendTelegramMessage(telegramId, mensaje_para_telegram)
+      if (accion_interna === 'CONFIRMAR') {
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              { text: "✅ Sí, guardar", callback_data: "CONFIRMAR_SI" },
+              { text: "❌ No, me faltó algo", callback_data: "CONFIRMAR_NO" }
+            ]
+          ]
+        }
+        await sendTelegramMessage(telegramId, mensaje_para_telegram, replyMarkup)
+      } else {
+        await sendTelegramMessage(telegramId, mensaje_para_telegram)
+      }
     }
 
     // 5. Mantenimiento del Historial
@@ -218,6 +250,11 @@ Deno.serve(async (req: Request) => {
 
     // 6. FLUJO DE INSERCIÓN (Cuando accion_interna === "INSERTAR")
     await sendTelegramMessage(telegramId, "⚙️ Procediendo a guardar datos definitivos en la base de datos...")
+    
+    const restartMarkup = {
+      inline_keyboard: [[{ text: "🔄 Registrar otro", callback_data: "reiniciar" }]]
+    }
+    
     const parsedData = datos_recolectados || {}
 
     // Búsqueda de foráneas e inserción
@@ -251,7 +288,7 @@ Deno.serve(async (req: Request) => {
         console.error('Insert error:', insertError)
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar en la base de datos de Recepción.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Recepción guardada exitosamente!\n\nIDs encontrados:\nProveedor: ${id_proveedor || 'No encontrado'}\nInsumo: ${id_insumo || 'No encontrado'}`)
+        await sendTelegramMessage(telegramId, `✅ ¡Recepción guardada exitosamente!\n\nIDs encontrados:\nProveedor: ${id_proveedor || 'No encontrado'}\nInsumo: ${id_insumo || 'No encontrado'}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId) // Limpiamos caché
       }
 
@@ -275,7 +312,7 @@ Deno.serve(async (req: Request) => {
       if (insertError) {
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar la bitácora.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Actividad de campo guardada exitosamente!\nSección BD: ${id_seccion || 'No resuelto'}`)
+        await sendTelegramMessage(telegramId, `✅ ¡Actividad de campo guardada exitosamente!\nSección BD: ${id_seccion || 'No resuelto'}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId)
       }
 
@@ -295,7 +332,7 @@ Deno.serve(async (req: Request) => {
       if (insertError) {
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar la aplicación.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Aplicación de insumo guardada exitosamente!\nInsumo BD: ${id_insumo || 'No encontrado'}`)
+        await sendTelegramMessage(telegramId, `✅ ¡Aplicación de insumo guardada exitosamente!\nInsumo BD: ${id_insumo || 'No encontrado'}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId)
       }
 
@@ -324,7 +361,7 @@ Deno.serve(async (req: Request) => {
         console.error('Insert error Lotes_Cosecha:', insertError)
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar en Lotes_Cosecha.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Lote de cosecha guardado exitosamente!\nSección BD: ${id_seccion || 'No resuelto'}`)
+        await sendTelegramMessage(telegramId, `✅ ¡Lote de cosecha guardado exitosamente!\nSección BD: ${id_seccion || 'No resuelto'}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId)
       }
 
@@ -359,7 +396,7 @@ Deno.serve(async (req: Request) => {
       if (insertError) {
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar el historial de transporte.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Transporte registrado exitosamente!\nTransporte BD: ${id_transporte || 'No encontrado'}\nCliente BD: ${id_cliente || 'No encontrado'}`)
+        await sendTelegramMessage(telegramId, `✅ ¡Transporte registrado exitosamente!\nTransporte BD: ${id_transporte || 'No encontrado'}\nCliente BD: ${id_cliente || 'No encontrado'}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId)
       }
     }
