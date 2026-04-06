@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { 
   crearBitacora, 
+  getBitacora,
   crearLote, 
   obtenerLotes,
   obtenerLotePorID,
@@ -13,6 +14,8 @@ const router = Router();
 // Rutas de Producción: Bitácoras
 // ============================================
 router.post('/bitacora', crearBitacora);
+router.get('/getBitacoraPorID/:id', getBitacora);
+
 
 // ============================================
 // Rutas de Producción: Lotes de Cosecha

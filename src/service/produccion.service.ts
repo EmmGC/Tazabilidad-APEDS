@@ -9,6 +9,21 @@ import {
 // 1. Bitácoras y Aplicaciones
 // ==========================================
 
+export const getBitacoraPorIDService = async (number: number) => {
+  const { data, error } = await supabase
+    .from('bitacora_actividades')
+    .select(`
+      *
+    `)
+    .eq("id_seccion", number);
+
+  if (error) {
+    throw new Error(`Error al obtener Bitacora: ${error.message}`);
+  }
+
+  return data;
+};
+
 export const registrarBitacoraService = async (data: BitacoraActividadData, detallesInsumos?: DetalleAplicacionInsumoData[]) => {
   // 1. Insertar la bitácora
   const { data: bitacora, error: errorBitacora } = await supabase

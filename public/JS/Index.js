@@ -1,5 +1,6 @@
 let id = window.location.pathname.split('/')[1];
 let idTransporte = 0;
+let idSeccion = 0;
 
 const title = document.getElementById('titleContainer');
 title.innerHTML = "Informacion del producto " + id;
@@ -71,10 +72,10 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
     })
     .then(res => res.json())
     .then(data => {
-        id = data[0].id_seccion;
+        idSeccion = data[0].id_seccion;
         populateTable(lotCosechaTable, data[0]);
 
-        return fetch("/api/produccion/getSeccionCultivoPorID/" + id);
+        return fetch("/api/produccion/getSeccionCultivoPorID/" + idSeccion);
     })
     .then(res => res.json())
     .then(data => {
@@ -85,8 +86,16 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
     })
     .then(res => res.json())
     .then(data => {
-        id = data[0].id_seccion;
         populateTable(uniProductTable, data[0]);
+
+        return fetch("/api/produccion/getBitacoraPorID/" + idSeccion);
+    })
+    .then(res => res.json())
+    .then(data => {
+        id = data[0].id_actividad;
+        populateTable(bitActTable, data[0]);
+
+        //return fetch("/api/produccion/getBitacoraPorID/"+id);
     })
     .catch(error => {
         console.error(error);
