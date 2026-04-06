@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
 
     let camposRequeridos = ''
     if (tablaAsignada === 'Recepcion_Insumos') camposRequeridos = "Proveedor del producto\nInsumo recibido\nCantidad (L, Kg, etc.)\nLote (opcional)\nFecha de Caducidad (opcional)\nNúmero de Factura (opcional)"
-    else if (tablaAsignada === 'Lotes_Cosecha') camposRequeridos = "Sección de cultivo\nFecha de cosecha\nFecha Juliana (número)\nAño\nCantidad de Cajas\nPeso Total\nUso de cultivo (ej. consumo nacional)\nCalidad\nCalibre\nColor\nObservaciones\nCódigo de trazabilidad"
+    else if (tablaAsignada === 'Lotes_Cosecha') camposRequeridos = "Sección de cultivo\nFecha de cosecha\nAño\nCantidad de Cajas\nPeso Total\nUso de cultivo (ej. consumo nacional)\nCalidad\nCalibre\nColor\nObservaciones"
     else if (tablaAsignada === 'Bitacora_Actividades') camposRequeridos = "Sección de cultivo\nTipo de actividad\nEquipo de aplicación\nLavado (sí/no)\nDesinfección (sí/no)\nObservaciones"
     else if (tablaAsignada === 'Detalle_Aplicacion_Insumos') camposRequeridos = "Nombre del insumo comercial\nDosis\nUnidad (ej. Litros)"
     else if (tablaAsignada === 'Historial_Transporte_Lotes') camposRequeridos = "Placas\nCliente Destino\nCajas Transportadas\nPeso Transportado (kg)\nTemp. Inicial\nTemp. de Llegada\nNo. de Documento\nIncidencias\nEntregado Completo (sí/no)\nVehículo Limpio (sí/no)"
@@ -135,7 +135,7 @@ Deno.serve(async (req: Request) => {
     if (tablaAsignada === 'Recepcion_Insumos') {
       extractSchemaStr = `{"nombre_proveedor": "string", "nombre_insumo": "string", "cantidad": "numero", "lote_insumo": "string", "fecha_caducidad": "YYYY-MM-DD", "numero_factura": "string"}`
     } else if (tablaAsignada === 'Lotes_Cosecha') {
-      extractSchemaStr = `{"seccion_cultivo": "string", "fecha_cosecha": "YYYY-MM-DD", "fecha_juliana": "numero integer", "anio_cosecha": "numero integer", "cantidad_cajas": "numero integer", "peso_kg": "numero decimal", "uso_cultivo": "string", "calidad": "string", "calibre": "string", "color": "string", "observaciones_calidad": "string", "codigo_trazabilidad": "string"}`
+      extractSchemaStr = `{"seccion_cultivo": "string", "fecha_cosecha": "YYYY-MM-DD", "anio_cosecha": "numero integer", "cantidad_cajas": "numero integer", "peso_kg": "numero decimal", "uso_cultivo": "string", "calidad": "string", "calibre": "string", "color": "string", "observaciones_calidad": "string"}`
     } else if (tablaAsignada === 'Bitacora_Actividades') {
       // Nota: id_seccion debe pedirse si es requerido, aquí asumimos seccion_cultivo
       extractSchemaStr = `{"seccion_cultivo": "string", "tipo_actividad": "string", "equipo_aplicacion": "string", "lavado": "boolean", "desinfeccion": "boolean", "observaciones": "string"}`
@@ -309,7 +309,6 @@ Deno.serve(async (req: Request) => {
       const insertPayload = {
         id_seccion,
         fecha_cosecha: parsedData.fecha_cosecha || new Date().toISOString(),
-        fecha_juliana: parsedData.fecha_juliana,
         anio_cosecha: parsedData.anio_cosecha,
         cantidad_cajas: parsedData.cantidad_cajas,
         peso_kg: parsedData.peso_kg,
@@ -318,7 +317,6 @@ Deno.serve(async (req: Request) => {
         calibre: parsedData.calibre,
         color: parsedData.color,
         observaciones_calidad: parsedData.observaciones_calidad,
-        codigo_trazabilidad: parsedData.codigo_trazabilidad
       }
 
       const { error: insertError } = await supabase.from('lotes_cosecha').insert([insertPayload])
