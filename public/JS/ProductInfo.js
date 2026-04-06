@@ -86,6 +86,12 @@ function populateTable(table, data) {
     }
 }
 
+const endLoading = new CustomEvent("endLoad");
+const loading = document.getElementById('loading');
+document.addEventListener('endLoad', (e) => {
+    loading.style.display = 'none'; 
+});
+
 fetch("/api/logistica-envios/getClientesPorID/"+id)
     .then(res => res.json())
     .then(data => {
@@ -146,6 +152,7 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
     .then(res => res.json())
     .then(data => {
         populateTable(recepInsumosTable, data[0]);
+        document.dispatchEvent(endLoading);
     })
     .catch(error => {
         console.error(error);
