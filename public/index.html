@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trazabilidad</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-box">
+            <div class="login-container">
+                <div class="header">
+                    <div class="logo">
+                        <img src="img/logo.png" alt="Logo APEDS">
+                    </div>
+                    <h1>Trazabilidad Agrícola</h1>
+                    <p>Bienvenido de nuevo, por favor inicia sesión</p>
+                </div>
+            </div>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" placeholder="ejemplo@apeds.com" required>
+                    <span class="focus-border"></span>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <span class="focus-border"></span>
+                </div>
+                
+                
+                <button type="submit" id="loginBtn">
+                    <span class="btn-text">Ingresar</span>
+                    <div class="loader"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
