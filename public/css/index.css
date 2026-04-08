@@ -17,7 +17,7 @@
 
 body {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(195, 207, 226, 0.171) 100%), 
-                url('img/fondo.webp') no-repeat center center fixed;
+                url('../img/fondo.webp') no-repeat center center fixed;
     background-size: cover;
     min-height: 100vh;
     display: flex;

@@ -9,10 +9,10 @@ import produccionRoutes from './src/routes/produccion.routes'
 import logisticaRoutes from './src/routes/logistica.routes'
 import reportesRoutes from './src/routes/reportes.routes'
 import probar from './src/ping'
+require('path')
 dotenv.config()
 
 const app = express()
-const path = require('path')
 const PORT = process.env.PORT || 3001
 
 // Middleware
@@ -35,9 +35,18 @@ app.get('/ping', (req, res) => {
 
 // Servir archivos estáticos y la página de Login (después de todas las APIs)
 app.use(express.static(path.join(__dirname, 'public')))
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
+app.get('/ProductInfo/:id', (req, res) => {
+  const { id } = req.params; 
+  res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
+});
+app.get('/busqueda', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html','busqueda.html'));
+});
+
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
@@ -48,9 +57,6 @@ if (process.env.NODE_ENV !== 'test') {
 // Archivos staticos para front
 app.use(express.static(path.join(__dirname, 'public')));
 // Front
-app.get('/ProductInfo/:id', (req, res) => {
-  const { id } = req.params; 
-  res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
-});
+
 
 export default app

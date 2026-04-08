@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Administración</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #3d5166;
+      --navy-dark: #2e3f52;
+      --accent: #5c7a96;
+      --bg:     #f0f3f6;
+      --surface:#ffffff;
+      --border: #c8d3dd;
+      --text:   #1e2d3d;
+      --muted:  #7a8fa0;
+      --btn-bg: #8ca4b8;
+      --btn-hover: #6e8fa8;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      height: 72px;
+      gap: 0;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      margin-right: auto;
+    }
+
+    /* Placeholder logo SVG */
+    .nav-logo svg {
+      width: 52px;
+      height: 52px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      list-style: none;
+      margin-right: 40px;
+    }
+
+    .nav-links a {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #d4dfe9;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover { color: #fff; }
+
+    .nav-links a.active {
+      color: #fff;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .nav-profile svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      max-width: 900px;
+      margin: 48px auto;
+      padding: 0 24px;
+    }
+
+    /* ── FILTER FORM ── */
+    .filter-form {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin-bottom: 36px;
+      box-shadow: 0 2px 12px rgba(61,81,102,.07);
+    }
+
+    .filter-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 38px 10px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .92rem;
+      color: var(--muted);
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8fa0' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      min-width: 150px;
+      transition: border-color .2s;
+    }
+    .filter-select:focus { outline: none; border-color: var(--accent); }
+
+    .search-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    .search-wrapper input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 46px 10px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .92rem;
+      color: var(--text);
+      transition: border-color .2s;
+    }
+    .search-wrapper input:focus { outline: none; border-color: var(--accent); }
+    .search-wrapper input::placeholder { color: var(--muted); }
+
+    .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--muted);
+    }
+
+    .btn-ejecutar {
+      background: var(--btn-bg);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn-ejecutar:hover  { background: var(--btn-hover); }
+    .btn-ejecutar:active { transform: scale(.97); }
+
+    /* ── TABLE ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(61,81,102,.07);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: var(--surface);
+      padding: 14px 18px;
+      text-align: left;
+      font-family: 'Syne', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .04em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f5f8fb; }
+
+    tbody td {
+      padding: 14px 18px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    /* empty rows */
+    .empty-row td { height: 46px; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav>
+  <div class="nav-logo">
+    <!-- Placeholder truck/globe logo -->
+    <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="52" height="52" rx="8" fill="#2e3f52"/>
+      <!-- globe circle -->
+      <circle cx="22" cy="24" r="12" stroke="#a8c0d6" stroke-width="1.8" fill="none"/>
+      <ellipse cx="22" cy="24" rx="5" ry="12" stroke="#a8c0d6" stroke-width="1.4" fill="none"/>
+      <line x1="10" y1="24" x2="34" y2="24" stroke="#a8c0d6" stroke-width="1.4"/>
+      <line x1="13" y1="17" x2="31" y2="17" stroke="#a8c0d6" stroke-width="1.2"/>
+      <line x1="13" y1="31" x2="31" y2="31" stroke="#a8c0d6" stroke-width="1.2"/>
+      <!-- truck silhouette -->
+      <rect x="28" y="30" width="16" height="10" rx="1.5" fill="#a8c0d6"/>
+      <path d="M44 33 L48 33 L48 40 L44 40" fill="#7a9ab5"/>
+      <circle cx="32" cy="41" r="2" fill="#2e3f52" stroke="#a8c0d6" stroke-width="1.2"/>
+      <circle cx="43" cy="41" r="2" fill="#2e3f52" stroke="#a8c0d6" stroke-width="1.2"/>
+    </svg>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#">Realizar registro</a></li>
+    <li><a href="#">Ver registros</a></li>
+    <li><a href="#" class="active">Administracion</a></li>
+  </ul>
+
+  <div class="nav-profile">
+    <!-- Profile / user icon -->
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="19" stroke="#a8c0d6" stroke-width="1.8" fill="none"/>
+      <circle cx="20" cy="16" r="6" fill="#a8c0d6"/>
+      <path d="M8 34c0-6.627 5.373-10 12-10s12 3.373 12 10" fill="#a8c0d6"/>
+    </svg>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- Filter form -->
+  <form class="filter-form" onsubmit="handleSearch(event)">
+    <select class="filter-select" id="filtro">
+      <option value="" disabled selected>Filtrar por</option>
+      <option value="id">ID de usuario</option>
+      <option value="tipo">Tipo</option>
+      <option value="fecha">Fecha</option>
+      <option value="responsable">Responsable</option>
+    </select>
+
+    <div class="search-wrapper">
+      <input type="text" id="busqueda" placeholder="" />
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </div>
+
+    <button type="submit" class="btn-ejecutar">Ejecutar</button>
+  </form>
+
+  <!-- Results table -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>ID de usuario</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Accion</th>
+          <th>Responsable</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-body">
+        <!-- Empty placeholder rows -->
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  function handleSearch(e) {
+    e.preventDefault();
+    const filtro   = document.getElementById('filtro').value;
+    const busqueda = document.getElementById('busqueda').value;
+    // TODO: call your API and populate #tabla-body with returned rows
+    console.log('Ejecutar:', { filtro, busqueda });
+  }
+</script>
+</body>
+</html>
