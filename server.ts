@@ -8,6 +8,7 @@ import proveedoresRoutes from './src/routes/proveedores.routes'
 import produccionRoutes from './src/routes/produccion.routes'
 import logisticaRoutes from './src/routes/logistica.routes'
 import reportesRoutes from './src/routes/reportes.routes'
+import frontRoutes from './src/routes/front.routes'
 import probar from './src/ping'
 require('path')
 dotenv.config()
@@ -26,6 +27,7 @@ app.use('/api/logistica-insumos', proveedoresRoutes)
 app.use('/api/produccion', produccionRoutes)
 app.use('/api/logistica-envios', logisticaRoutes)
 app.use('/api/reportes', reportesRoutes)
+app.use('/api/front', frontRoutes)
 
 // Health check (Puede ir antes o después de estáticos, pero antes de la ruta '/')
 app.get('/ping', (req, res) => {
