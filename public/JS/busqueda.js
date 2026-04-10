@@ -1,7 +1,19 @@
 // Logica de botones de navegacion
 let currentTableindex = 0;
 let IDArray = [];
+
+function botonAdelante(){
+    currentTableindex += 1;
+    renderTableinArray();    
+}
+
+function botonAtras(){
+    currentTableindex -= 1;
+    renderTableinArray();
+}
+
 function renderTableinArray(){
+    
     fetch(apiURls[currentTableindex][0] + IDArray[apiURls[currentTableindex][1]])
         .then(res => res.json())
         .then(data => {
@@ -54,16 +66,39 @@ function handleSearch(e) {
     const api = apiURls[selectValue][0];
     currentTableindex = opciones.indexOf(selectValue);
 
+    // fetch(api + inputNum)
+    //     .then(res => res.json())
+    //     .then(data => {
+    //         populateTable(table, data[0]);
+    //         //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
+    //         return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
+    //     })
+    //     .then(res => res.json()) 
+    //     .then(array => {
+    //         IDArray = array;
+    //         console.warn(IDArray);
+    //     })
+    //     .catch(err => {
+    //         console.error(err);
+    //     });
+
     fetch(api + inputNum)
         .then(res => res.json())
         .then(data => {
             populateTable(table, data[0]);
             //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
-            return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
-        })
-        .then(res => res.json()) 
-        .then(array => {
-            IDArray = array;
+            const jsonData = [
+            {
+                "id_cliente": 1001,
+                "id_transporte": 4000,
+                "id_lote": 2500,
+                "id_seccion": 5000,
+                "id_unidad": 4500,
+                "id_actividad": 1500,
+                "id_insumo": 2000
+            }
+            ];
+            IDArray = jsonData[0];
             console.warn(IDArray);
         })
         .catch(err => {

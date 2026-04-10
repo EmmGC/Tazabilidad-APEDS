@@ -44,7 +44,7 @@ export const obtenerInfoProvePorID = async (req: any, res: Response) => {
     const catalogo = await obtenerInfoProvePorIDService(Number(id));
     return res.status(200).json(catalogo);
   } catch (error: any) {
-    console.error("[CONTROLLER] Error en obtenerProveedores:", error.message);
+    console.error("[CONTROLLER] Error en obtener Proveedores por ID:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };

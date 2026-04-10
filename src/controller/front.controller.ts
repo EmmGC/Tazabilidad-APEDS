@@ -8,7 +8,7 @@ export const obtenerArrayIDs = async (req: any, res: Response) => {
     const catalogo = await getRelatedIDs(Number(idNum), idType);
     return res.status(200).json(catalogo);
   } catch (error: any) {
-    console.error("[CONTROLLER] Error en obtenerProveedores:", error.message);
+    console.error("[CONTROLLER] Error en obtener Array de IDs:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
