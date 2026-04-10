@@ -1,29 +1,40 @@
 // Logica de botones de navegacion
 let currentTableindex = 0;
 let IDArray = [];
+const botonAdelante = document.getElementById('btnNext');
+const botonAtras = document.getElementById('btnPrev');
 
-function botonAdelante(){
+function irAdelante(btn){
     currentTableindex += 1;
+    botonAtras.disabled = false;
+    if(currentTableindex === opciones.length - 1){
+        btn.disabled = true;
+    }
     renderTableinArray();    
 }
 
-function botonAtras(){
+function irAtras(btn){
     currentTableindex -= 1;
+    botonAdelante.disabled = false;
+    if(currentTableindex === 0){
+        btn.disabled = true;
+    }
     renderTableinArray();
 }
 
 function renderTableinArray(){
-    
-    fetch(apiURls[currentTableindex][0] + IDArray[apiURls[currentTableindex][1]])
+    fetch(apiURls[opciones[currentTableindex].replaceAll(' ','_')][0] + IDArray[0][apiURls[opciones[currentTableindex].replaceAll(' ','_')][1]])
         .then(res => res.json())
         .then(data => {
-            populateTable(table, data[0]);
+            populateTableAndTitle(table, data[0]);
         })
         .catch(err => {
             console.error(err);
         });
 }
+
 //Poblar menu select
+const title = document.getElementById('actualTable');
 const table = document.getElementById('resultsTable');
 const opciones = [
     "cliente final",
@@ -65,41 +76,17 @@ function handleSearch(e) {
     const inputNum = document.getElementById('busqueda').value;
     const api = apiURls[selectValue][0];
     currentTableindex = opciones.indexOf(selectValue);
-
-    // fetch(api + inputNum)
-    //     .then(res => res.json())
-    //     .then(data => {
-    //         populateTable(table, data[0]);
-    //         //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
-    //         return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
-    //     })
-    //     .then(res => res.json()) 
-    //     .then(array => {
-    //         IDArray = array;
-    //         console.warn(IDArray);
-    //     })
-    //     .catch(err => {
-    //         console.error(err);
-    //     });
-
+    if(currentTableindex < 0) currentTableindex = 0;
     fetch(api + inputNum)
         .then(res => res.json())
         .then(data => {
-            populateTable(table, data[0]);
+            populateTableAndTitle(table, data[0]);
             //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
-            const jsonData = [
-            {
-                "id_cliente": 1001,
-                "id_transporte": 4000,
-                "id_lote": 2500,
-                "id_seccion": 5000,
-                "id_unidad": 4500,
-                "id_actividad": 1500,
-                "id_insumo": 2000
-            }
-            ];
-            IDArray = jsonData[0];
-            console.warn(IDArray);
+            return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
+        })
+        .then(res => res.json()) 
+        .then(array => {
+            IDArray = array;
         })
         .catch(err => {
             console.error(err);
@@ -131,8 +118,17 @@ function formatTitle(key) {
         .replace(/^\w/, c => c.toUpperCase());
 }
 
-function populateTable(table, data) {
+function populateTableAndTitle(table, data) {
     try {
+        botonAdelante.disabled = false;
+        botonAtras.disabled = false;
+        if(currentTableindex === 0){
+            botonAtras.disabled = true;
+        }else if (currentTableindex === opciones.length -1) {
+            botonAdelante.disabled = true;
+        }
+        title.innerText = 'Tabla actual: ' + opciones[currentTableindex];
+        table.innerHTML = '';
         if (data === undefined || data === null){
             throw new Error();
         }
@@ -174,11 +170,14 @@ function populateTable(table, data) {
 
         table.appendChild(tbody);
     } catch (error) {
+        title.innerText = '';
         const header = document.createElement('tr');
-        const title = document.createElement('th');
+        const tableHead = document.createElement('th');
         const sinDatos = document.createElement('b');
-        header.appendChild(title);
-        title.appendChild(sinDatos);
+        botonAdelante.disabled = true;
+        botonAtras.disabled = true;
+        header.appendChild(tableHead);
+        tableHead.appendChild(sinDatos);
         sinDatos.style.fontSize = '25px';
         sinDatos.innerText = 'No se encontro información';
         table.appendChild(header); 
