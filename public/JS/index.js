@@ -41,8 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 if (data && data.session && data.user) {
                     console.log('Login exitoso:', data);
-                    alert('Correo y contraseña existentes en la BD');
-                    // window.location.href = '/dashboard'; 
+                    document.cookie = `access_token=${data.session.access_token}; path=/`
+                    localStorage.setItem('access_token', data.session.access_token)
+                    window.location.href = '/busqueda'
                 } else {
                     // Esto debería ser raro si response.ok es true y el backend envía datos correctos
                     alert('Respuesta inesperada del servidor.');

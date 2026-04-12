@@ -10,6 +10,10 @@ import logisticaRoutes from './src/routes/logistica.routes'
 import reportesRoutes from './src/routes/reportes.routes'
 import frontRoutes from './src/routes/front.routes'
 import probar from './src/ping'
+import { supabase } from './src/config/supabaseClient';
+import cookieParser from 'cookie-parser';
+
+
 require('path')
 dotenv.config()
 
@@ -18,6 +22,7 @@ const PORT = process.env.PORT || 3001
 
 // Middleware
 app.use(express.json())
+app.use(cookieParser()) 
 
 // Routes (Todas las rutas de la API primero)
 app.use('/api/insumos', insumosRoutes)
@@ -45,10 +50,17 @@ app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
   res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
-app.get('/busqueda', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'html','busqueda.html'));
-});
+app.get('/busqueda', async (req, res) => {
+  const token = req.cookies?.access_token
 
+  if (!token) return res.redirect('/')
+
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+  if (error || !user) return res.redirect('/')
+
+  res.sendFile(path.join(__dirname, 'public', 'html', 'busqueda.html'))
+})
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
