@@ -23,3 +23,20 @@ export const getAllUsersService = async () => {
   if (error) throw error
   return data
 }
+
+export const updateUserService = async (userId: string, updates: object) => {
+  const { data, error } = await supabaseUserAdmin.auth.admin.updateUserById(
+    userId,
+    updates
+  );
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteUserService = async (userId: string) => {
+  const { data, error } = await supabaseUserAdmin.auth.admin.deleteUser(userId);
+
+  if (error) throw error;
+  return data;
+};

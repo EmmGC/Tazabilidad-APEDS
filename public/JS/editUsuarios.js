@@ -23,7 +23,33 @@ getUsers().then(users => {
   renderUsers(users);
 });
 
-/* ── HOOKS ── */
+/* ----- Update user ----- */
+async function updateUser(userId, updates) {
+  const response = await fetch('/api/userAuth/updateUser', {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId, ...updates })
+  });
+
+  return await response.json();
+}
+/* ----- Delete user ----- */
+async function deleteUser(userId) {
+  const response = await fetch('/api/userAuth/deleteUser', {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId })
+  });
+
+  return await response.json();
+}
+/* ── MODAL Functions ── */
 const editModal = document.getElementById('editModal');
 const btnCloseEdit = document.getElementById('btnCloseEdit');
 let activeUserId = null;
@@ -67,23 +93,38 @@ editModal.addEventListener('click', (e) => {
 
 // save
 document.getElementById('btnSaveUser').addEventListener('click', () => {
-  const email = document.getElementById('editEmail').value.trim();
-  const password = document.getElementById('editPassword').value;
+  const emailEdt = document.getElementById('editEmail').value.trim();
+  const passwordEdt = document.getElementById('editPassword').value;
 
-  if (!email) return;
-
-  // TODO: call your API to update the user
-  console.log('Guardar cambios → ID:', activeUserId, { email, password: password || '(sin cambios)' });
-  editModal.classList.remove('open');
+  if (!emailEdt) return;
+  //Agregar a updates solo campos con datos
+  const updates = {};
+  if (emailEdt) updates.email = emailEdt;
+  if (passwordEdt) updates.password = passwordEdt;
+  //fetch
+  updateUser(activeUserId, updates)
+    .then(msg => {
+      if(msg.error){
+        alert(msg.error)
+      }else{
+        alert('Usuario actualizado')
+        window.location.href = '/editUsers';
+      }
+    });
 });
 
 // delete
 document.getElementById('btnDeleteUser').addEventListener('click', () => {
   if (!confirm(`¿Eliminar usuario ID ${activeUserId}? Esta acción no se puede deshacer.`)) return;
-
-  // TODO: call your API to delete the user, then re-render the table
-  console.log('Eliminar usuario → ID:', activeUserId);
-  editModal.classList.remove('open');
+  deleteUser(activeUserId)
+    .then(msg => {
+      if (msg.error) {
+        alert(msg.error);
+      } else {
+        alert('Usuario eliminado');
+        window.location.href = '/editUsers';
+      }
+    });
 });
 
 function handleNewUser() {
