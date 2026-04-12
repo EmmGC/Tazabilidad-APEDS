@@ -43,24 +43,33 @@ app.get('/ping', (req, res) => {
 // Servir archivos estáticos y la página de Login (después de todas las APIs)
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+  const token = req.cookies?.access_token;
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  //Redirigir a dashboard si hay sesion iniciada
+  if (!error && user) return res.redirect('/busqueda')
   res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
+
 app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
   res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
+
 app.get('/busqueda', async (req, res) => {
   const token = req.cookies?.access_token
-
-  if (!token) return res.redirect('/')
-
   const { data: { user }, error } = await supabase.auth.getUser(token)
-
+  console.log(user);
+  
   if (error || !user) return res.redirect('/')
 
   res.sendFile(path.join(__dirname, 'public', 'html', 'busqueda.html'))
 })
+
+app.get('/logout', async(req, res) => {
+  await supabase.auth.signOut();
+  return res.redirect('/');
+});
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
