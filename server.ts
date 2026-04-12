@@ -42,34 +42,49 @@ app.get('/ping', (req, res) => {
 
 // Servir archivos estáticos y la página de Login (después de todas las APIs)
 app.use(express.static(path.join(__dirname, 'public')))
-
+//--------------------------------------------------- Rutas para front ---------------------------------------------------
+//Login
 app.get('/', async (req, res) => {
   const token = req.cookies?.access_token;
   const { data: { user }, error } = await supabase.auth.getUser(token);
   //Redirigir a dashboard si hay sesion iniciada
-  if (!error && user) return res.redirect('/busqueda')
+  //if (!error && user) return res.redirect('/busqueda')
   res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
-
+//Pagina de info para externos
 app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
   res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
-
+//Pagina para trazabilidad hacia adelante y atras
 app.get('/busqueda', async (req, res) => {
   const token = req.cookies?.access_token
   const { data: { user }, error } = await supabase.auth.getUser(token)
-  console.log(user);
+  //console.log(user);
   
   if (error || !user) return res.redirect('/')
 
   res.sendFile(path.join(__dirname, 'public', 'html', 'busqueda.html'))
 })
+//Pagina de manejo de usuarios
+app.get('/editUsers', async (req, res) => {
+  // const token = req.cookies?.access_token
+  // const { data: { user }, error } = await supabase.auth.getUser(token)
+  // console.log(user);
+  
+  // if (error || !user) return res.redirect('/')
 
+  res.sendFile(path.join(__dirname, 'public', 'html', 'editUsuarios.html'))
+})
+
+//Ruta para logout
 app.get('/logout', async(req, res) => {
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut()
+  if(error) return error;
   return res.redirect('/');
 });
+
+// --------------------------------------- Fin rutas front -----------------------------------------------------
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {

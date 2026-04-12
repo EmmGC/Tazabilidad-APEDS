@@ -301,7 +301,7 @@
     <ul class="nav-links">
       <li><a href="#">Realizar registro</a></li>
       <li><a href="/busqueda" class="active">Ver registros</a></li>
-      <li><a href="#">Administracion</a></li>
+      <li><a href="/editUsers">Administracion</a></li>
     </ul>
 
     <div id="profileBtn" class="nav-profile">
@@ -374,14 +374,12 @@
       <span class="modal-name" id="modalName">Nombre de usuario</span>
       <span class="modal-email" id="modalEmail">usuario@correo.com</span>
       <div class="modal-divider"></div>
-      <a href="/logout">
-        <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
-      </a>
+      <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
     </div>
   </div>
 
-  <script src="../JS/busqueda.js"></script>
-  <script src="../JS/userModal.js"></script>
+  <script src="../JS/busqueda.js" type="module"></script>
+  <script src="../JS/userModal.js" type="module"></script>
 </body>
 
 </html>

@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabaseClient';
+import { supabaseUserAdmin } from '../config/supabaseClient';
 
 export interface usuarios {
     correo: string,
@@ -11,6 +12,13 @@ export const login = async (email: string, password: string) => {
     email,
     password
   })
+
+  if (error) throw error
+  return data
+}
+
+export const getAllUsersService = async () => {
+  const { data, error } = await supabaseUserAdmin.auth.admin.listUsers();
 
   if (error) throw error
   return data
