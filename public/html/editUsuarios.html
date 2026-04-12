@@ -51,11 +51,6 @@
             margin-right: auto;
         }
 
-        .nav-logo img {
-            height: 52px;
-            width: auto;
-        }
-
         /* fallback placeholder if image missing */
         .nav-logo svg {
             width: 52px;
@@ -153,21 +148,20 @@
 
         /* column widths */
         col.col-id {
-            width: 70px;
+            width: 140px;
         }
 
-        col.col-nombre {
+        /* col.col-nombre {
             width: 22%;
-        }
+        } */
 
         col.col-correo {
             width: 32%;
         }
 
-        col.col-puesto {
-            width: auto;
+        col.col-createDate {
+            width: 30%;
         }
-
         col.col-action {
             width: 56px;
         }
@@ -291,17 +285,19 @@
             <table>
                 <colgroup>
                     <col class="col-id" />
-                    <col class="col-nombre" />
+                    <!-- <col class="col-nombre" /> -->
                     <col class="col-correo" />
-                    <col class="col-puesto" />
+                    <!-- <col class="col-puesto" /> -->
+                    <col class="col-createDate" />
                     <col class="col-action" />
                 </colgroup>
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Nombre</th>
+                        <!-- <th>Nombre</th> -->
                         <th>Correo</th>
-                        <th>Puesto</th>
+                        <th>Fecha de creacion</th>
+                        <!-- <th>Puesto</th> -->
                         <th></th>
                     </tr>
                 </thead>
@@ -314,7 +310,7 @@
     </main>
 
     <!-- ── PROFILE MODAL ── -->
-    <div class="modal-overlay" id="profileModal" style="z-index: 99999999;">
+    <div class="modal-overlay" id="profileModal">
         <div class="modal-card">
             <div class="modal-avatar">
                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

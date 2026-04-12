@@ -48,7 +48,7 @@ app.get('/', async (req, res) => {
   const token = req.cookies?.access_token;
   const { data: { user }, error } = await supabase.auth.getUser(token);
   //Redirigir a dashboard si hay sesion iniciada
-  //if (!error && user) return res.redirect('/busqueda')
+  if (!error && user) return res.redirect('/busqueda')
   res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
 //Pagina de info para externos
@@ -68,11 +68,10 @@ app.get('/busqueda', async (req, res) => {
 })
 //Pagina de manejo de usuarios
 app.get('/editUsers', async (req, res) => {
-  // const token = req.cookies?.access_token
-  // const { data: { user }, error } = await supabase.auth.getUser(token)
-  // console.log(user);
-  
-  // if (error || !user) return res.redirect('/')
+  const token = req.cookies?.access_token
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+  if (error || !user) return res.redirect('/')
 
   res.sendFile(path.join(__dirname, 'public', 'html', 'editUsuarios.html'))
 })

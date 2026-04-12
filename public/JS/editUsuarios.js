@@ -1,24 +1,16 @@
+const token = localStorage.getItem('access_token');
 /* ── SAMPLE DATA (replace with your API call) ── */
+
 // id, nombre, correo, puesto
-  const sampleUsers = [
-    { id: 1, nombre: 'Santiago Martínez López',   correo: 'test.usuario02@example.org',     puesto: 'Unidad de producción' },
-    { id: 2, nombre: 'Mateo Rodríguez García',    correo: 'usuario.prueba01@example.com',   puesto: 'Cosecha de vegetales' },
-    { id: 3, nombre: 'Valentina Hernández Pérez', correo: 'demo.cuenta03@example.net',      puesto: 'Empacado de vegetales' },
-    { id: 4, nombre: 'Sebastián Torres Díaz',     correo: 'prueba.mail04@example.com',      puesto: 'Transporte de vegetales' },
-    { id: 5, nombre: 'Isabella Morales Sánchez',  correo: 'usuario.fake05@example.org',     puesto: 'Comercialización de vegetales' },
-    { id: 6, nombre: 'Camila González Ramírez',   correo: 'testing.correos06@example.net',  puesto: 'Cosecha de vegetales' },
-    { id: 7, nombre: 'Diego Castillo Vargas',     correo: 'demo.usuario07@example.com',     puesto: 'Transporte de vegetales' },
-  ];
 
   /* ── RENDER TABLE ── */
-  function renderUsers(users) {
+  async function renderUsers(users) {
     const tbody = document.getElementById('usersTableBody');
     tbody.innerHTML = users.map(u => `
       <tr>
         <td>${u.id}</td>
-        <td>${u.nombre}</td>
-        <td class="td-correo">${u.correo}</td>
-        <td>${u.puesto}</td>
+        <td class="td-correo">${u.email}</td>
+        <td class="td-crete-date">${u.created_at}</td>
         <td class="td-action">
           <button class="btn-gear" title="Configurar usuario" onclick="handleEditUser(${u.id})">
             <!-- gear SVG -->
@@ -29,7 +21,10 @@
     `).join('');
   }
 
-  renderUsers(sampleUsers);
+  getUsers().then(users => {
+    console.warn(users);
+    renderUsers(users);
+  });
 
   /* ── HOOKS ── */
   function handleEditUser(id) {
@@ -42,15 +37,23 @@
     console.log('Nuevo usuario');
   }
 
-const token = localStorage.getItem('access_token');
+
 async function getUsers() {
-    const response = await fetch('/api/userAuth/getUsuarios', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    return response.json();
+  const response = await fetch('/api/userAuth/getUsuarios', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json();
+
+  const users = data.users.map(u => ({
+    id: u.id,
+    email: u.email,
+    created_at: new Date(u.created_at).toLocaleDateString("en-GB"),
+  }));
+  
+  return users;
 }
 
-getUsers().then(data => console.log(data));
