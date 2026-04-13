@@ -3,11 +3,11 @@ let currentTableindex = 0;
 let IDArray = [];
 const botonAdelante = document.getElementById('btnNext');
 const botonAtras = document.getElementById('btnPrev');
-
+let resultLength = 0;
 function irAdelante(btn){
     currentTableindex += 1;
     botonAtras.disabled = false;
-    if(currentTableindex === opciones.length - 1){
+    if(currentTableindex === resultLength){
         btn.disabled = true;
     }
     renderTableinArray();    
@@ -81,12 +81,12 @@ function handleSearch(e) {
         .then(res => res.json())
         .then(data => {
             populateTableAndTitle(table, data[0]);
-            //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
             return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
         })
         .then(res => res.json()) 
         .then(array => {
             IDArray = array;
+            resultLength = Object.keys(IDArray[0]).length;
         })
         .catch(err => {
             console.error(err);
@@ -124,7 +124,7 @@ function populateTableAndTitle(table, data) {
         botonAtras.disabled = false;
         if(currentTableindex === 0){
             botonAtras.disabled = true;
-        }else if (currentTableindex === opciones.length -1) {
+        }else if (currentTableindex === resultLength) {
             botonAdelante.disabled = true;
         }
         title.innerText = 'Tabla actual: ' + opciones[currentTableindex];

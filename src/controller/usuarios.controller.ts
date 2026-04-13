@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { login } from '../service/usuarios.service';
+import { login, getAllUsersService, updateUserService, deleteUserService, createUserService} from '../service/usuarios.service';
 
 export const verificarUsuario = async (req: any, res: Response) => {
     try {
@@ -16,3 +16,42 @@ export const verificarUsuario = async (req: any, res: Response) => {
         return res.status(500).json({ error: 'Error interno del servidor.' });
     }
 }
+export const getAllUsers = async (req: any, res: Response) => {
+  try {
+    const catalogo = await getAllUsersService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtener usuarios:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const createUser = async (req: any, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const data = await createUserService(email, password);
+    return res.status(201).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateUser = async (req: any, res: Response) => {
+  try {
+    const { userId, ...updates } = req.body;
+    const data = await updateUserService(userId, updates);
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteUser = async (req: any, res: Response) => {
+  try {
+    const { userId } = req.body;
+    const data = await deleteUserService(userId);
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

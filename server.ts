@@ -10,6 +10,10 @@ import logisticaRoutes from './src/routes/logistica.routes'
 import reportesRoutes from './src/routes/reportes.routes'
 import frontRoutes from './src/routes/front.routes'
 import probar from './src/ping'
+import { supabase } from './src/config/supabaseClient';
+import cookieParser from 'cookie-parser';
+
+
 require('path')
 dotenv.config()
 
@@ -18,6 +22,7 @@ const PORT = process.env.PORT || 3001
 
 // Middleware
 app.use(express.json())
+app.use(cookieParser()) 
 
 // Routes (Todas las rutas de la API primero)
 app.use('/api/insumos', insumosRoutes)
@@ -37,18 +42,49 @@ app.get('/ping', (req, res) => {
 
 // Servir archivos estáticos y la página de Login (después de todas las APIs)
 app.use(express.static(path.join(__dirname, 'public')))
-
-app.get('/', (req, res) => {
+//--------------------------------------------------- Rutas para front ---------------------------------------------------
+//Login
+app.get('/', async (req, res) => {
+  const token = req.cookies?.access_token;
+  if(token){
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    console.log(user);
+    if (!error && user) return res.redirect('/busqueda')
+  }
   res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
+//Pagina de info para externos
 app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
   res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
-app.get('/busqueda', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'html','busqueda.html'));
+//Pagina para trazabilidad hacia adelante y atras
+app.get('/busqueda', async (req, res) => {
+  const token = req.cookies?.access_token
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+  //console.log(user);
+  
+  if (error || !user) return res.redirect('/')
+
+  res.sendFile(path.join(__dirname, 'public', 'html', 'busqueda.html'))
+})
+//Pagina de manejo de usuarios
+app.get('/editUsers', async (req, res) => {
+  const token = req.cookies?.access_token
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+  if (error || !user) return res.redirect('/')
+
+  res.sendFile(path.join(__dirname, 'public', 'html', 'editUsuarios.html'))
+})
+
+//ruta logotut
+app.post('/logout', async (req, res) => {
+  res.clearCookie('access_token', { path: '/' });
+  res.sendStatus(200);
 });
 
+// --------------------------------------- Fin rutas front -----------------------------------------------------
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {

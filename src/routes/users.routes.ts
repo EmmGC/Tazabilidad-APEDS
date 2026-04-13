@@ -1,7 +1,14 @@
 import { Router } from 'express';
-import { verificarUsuario } from '../controller/usuarios.controller';
+import { verificarUsuario, getAllUsers, updateUser, deleteUser, createUser} from '../controller/usuarios.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+
 const router = Router()
 
 router.post('/', verificarUsuario)
+
+router.get('/getUsuarios', authMiddleware, getAllUsers)
+router.put('/updateUser', authMiddleware, updateUser)
+router.delete('/deleteUser', authMiddleware, deleteUser)
+router.post('/createUsuario', authMiddleware, createUser)
 
 export default router;
