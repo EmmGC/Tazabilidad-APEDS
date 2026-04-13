@@ -3,6 +3,8 @@ let currentTableindex = 0;
 let IDArray = [];
 const botonAdelante = document.getElementById('btnNext');
 const botonAtras = document.getElementById('btnPrev');
+const title = document.getElementById('actualTable');
+const table = document.getElementById('resultsTable');
 let resultLength = 0;
 function irAdelante(btn){
     currentTableindex += 1;
@@ -23,19 +25,32 @@ function irAtras(btn){
 }
 
 function renderTableinArray(){
-    fetch(apiURls[opciones[currentTableindex]][0] + IDArray[0][apiURls[opciones[currentTableindex]][1]])
-        .then(res => res.json())
-        .then(data => {
-            populateTableAndTitle(table, data[0]);
-        })
-        .catch(err => {
-            console.error(err);
-        });
+    nextTableID = IDArray[0][apiURls[opciones[currentTableindex]][1]];
+    if(nextTableID !== null){
+        fetch(apiURls[opciones[currentTableindex]][0] + nextTableID)
+            .then(res => res.json())
+            .then(data => {
+                populateTableAndTitle(table, data[0]);
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }else{
+        table.innerHTML = '';
+        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_',' ');
+        const header = document.createElement('tr');
+        const tableHead = document.createElement('th');
+        const sinDatos = document.createElement('b');
+        header.appendChild(tableHead);
+        tableHead.appendChild(sinDatos);
+        sinDatos.style.fontSize = '25px';
+        sinDatos.innerText = 'Sin registro';
+        table.appendChild(header); 
+    }
 }
 
 //Poblar menu select
-const title = document.getElementById('actualTable');
-const table = document.getElementById('resultsTable');
+
 const opciones = [
     "cliente_final",
     "Embarque",
@@ -85,6 +100,7 @@ function handleSearch(e) {
         })
         .then(res => res.json()) 
         .then(array => {
+            console.log(array);
             IDArray = array;
             resultLength = Object.keys(IDArray[0]).length;
         })
