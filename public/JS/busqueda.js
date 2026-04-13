@@ -23,7 +23,7 @@ function irAtras(btn){
 }
 
 function renderTableinArray(){
-    fetch(apiURls[opciones[currentTableindex].replaceAll(' ','_')][0] + IDArray[0][apiURls[opciones[currentTableindex].replaceAll(' ','_')][1]])
+    fetch(apiURls[opciones[currentTableindex]][0] + IDArray[0][apiURls[opciones[currentTableindex]][1]])
         .then(res => res.json())
         .then(data => {
             populateTableAndTitle(table, data[0]);
@@ -37,14 +37,14 @@ function renderTableinArray(){
 const title = document.getElementById('actualTable');
 const table = document.getElementById('resultsTable');
 const opciones = [
-    "cliente final",
+    "cliente_final",
     "Embarque",
     "Transporte",
-    "Lote de cosecha",
-    "Seccion de cultivo",
-    "Unidad de produccion",
-    "Bitacora de actividades",
-    "Aplicacion de insumos",
+    "Lote_de_cosecha",
+    "Seccion_de_cultivo",
+    "Unidad_de_produccion",
+    "Bitacora_de_actividades",
+    "Aplicacion_de_insumos",
     "Proveedor",
 ];
 const apiURls = {
@@ -63,8 +63,8 @@ const menuSelect = document.getElementById('filtroSelect');
 menuSelect.innerHTML = '<option value=""> Buscar por </option>';
 opciones.forEach(opcion => {
     const option = document.createElement('option');
-    option.innerText = opcion;
-    const opcionEdit = opcion.replace(' ', '_');
+    option.innerText = opcion.replaceAll('_', ' ');
+    const opcionEdit = opcion;
     option.value = opcionEdit;
     menuSelect.appendChild(option);
 });
@@ -127,7 +127,7 @@ function populateTableAndTitle(table, data) {
         }else if (currentTableindex === resultLength) {
             botonAdelante.disabled = true;
         }
-        title.innerText = 'Tabla actual: ' + opciones[currentTableindex];
+        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_',' ');
         table.innerHTML = '';
         if (data === undefined || data === null){
             throw new Error();
