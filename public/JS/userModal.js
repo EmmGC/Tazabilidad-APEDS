@@ -32,8 +32,8 @@ function clearCookies() {
   });
 }
 async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  localStorage.removeItem('access_token');
+  await supabase.auth.signOut();
+  await fetch('/logout', { method: 'POST' }); 
   clearCookies();
   window.location.href = '/';
 }

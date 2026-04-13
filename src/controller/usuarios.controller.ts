@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { login, getAllUsersService, updateUserService, deleteUserService} from '../service/usuarios.service';
+import { login, getAllUsersService, updateUserService, deleteUserService, createUserService} from '../service/usuarios.service';
 
 export const verificarUsuario = async (req: any, res: Response) => {
     try {
@@ -22,6 +22,16 @@ export const getAllUsers = async (req: any, res: Response) => {
     return res.status(200).json(catalogo);
   } catch (error: any) {
     console.error("[CONTROLLER] Error en obtener usuarios:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const createUser = async (req: any, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const data = await createUserService(email, password);
+    return res.status(201).json(data);
+  } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
 };

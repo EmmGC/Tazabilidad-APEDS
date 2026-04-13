@@ -453,7 +453,7 @@
     <main>
 
         <div class="top-bar">
-            <button class="btn-nuevo" onclick="handleNewUser()">Nuevo usuario</button>
+            <button class="btn-nuevo" id="btnNuevoUsuario">Nuevo usuario</button>
         </div>
 
         <div class="table-wrapper">
@@ -504,7 +504,7 @@
     <div class="edit-overlay" id="editModal">
         <div class="edit-card">
             <div class="edit-header">
-                <span class="edit-title">Editar usuario</span>
+                <span class="edit-title" id="editModalTitle">Editar usuario</span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="edit-user-id" id="editUserId">ID: —</span>
                     <button class="btn-close-edit" id="btnCloseEdit" title="Cerrar">

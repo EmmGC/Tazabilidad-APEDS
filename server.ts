@@ -46,9 +46,11 @@ app.use(express.static(path.join(__dirname, 'public')))
 //Login
 app.get('/', async (req, res) => {
   const token = req.cookies?.access_token;
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  //Redirigir a dashboard si hay sesion iniciada
-  if (!error && user) return res.redirect('/busqueda')
+  if(token){
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    console.log(user);
+    if (!error && user) return res.redirect('/busqueda')
+  }
   res.sendFile(path.join(__dirname, 'public','html','index.html'))
 })
 //Pagina de info para externos
@@ -76,11 +78,10 @@ app.get('/editUsers', async (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'html', 'editUsuarios.html'))
 })
 
-//Ruta para logout
-app.get('/logout', async(req, res) => {
-  const { error } = await supabase.auth.signOut()
-  if(error) return error;
-  return res.redirect('/');
+//ruta logotut
+app.post('/logout', async (req, res) => {
+  res.clearCookie('access_token', { path: '/' });
+  res.sendStatus(200);
 });
 
 // --------------------------------------- Fin rutas front -----------------------------------------------------

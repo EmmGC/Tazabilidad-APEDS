@@ -23,6 +23,19 @@ getUsers().then(users => {
   renderUsers(users);
 });
 
+/* ----- Create user ----- */
+async function createUser(email, password) {
+  const response = await fetch('/api/userAuth/createUsuario', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  });
+
+  return await response.json();
+}
 /* ----- Update user ----- */
 async function updateUser(userId, updates) {
   const response = await fetch('/api/userAuth/updateUser', {
@@ -50,26 +63,53 @@ async function deleteUser(userId) {
   return await response.json();
 }
 /* ── MODAL Functions ── */
+let modalMode = 'edit'; // 'edit' | 'create'
+
+function openEditModal(user) {
+  modalMode = 'edit';
+  activeUserId = user.id;
+
+  const el = document.getElementById('editUserId');
+  el.textContent = `ID: ${user.id.slice(0, 8)}…`;
+  el.title = user.id;
+  el.style.display = '';
+
+  document.getElementById('editModalTitle').textContent = 'Editar usuario';
+  document.getElementById('editEmail').value            = user.email;
+  document.getElementById('editPassword').value         = '';
+  document.getElementById('btnDeleteUser').style.display = '';
+
+  editModal.classList.add('open');
+}
+
+function openCreateModal() {
+  modalMode    = 'create';
+  activeUserId = null;
+
+  document.getElementById('editUserId').style.display   = 'none';
+  document.getElementById('editModalTitle').textContent  = 'Nuevo usuario';
+  document.getElementById('editEmail').value             = '';
+  document.getElementById('editPassword').value          = '';
+  document.getElementById('btnDeleteUser').style.display = 'none';
+
+  editModal.classList.add('open');
+}
+
 const editModal = document.getElementById('editModal');
 const btnCloseEdit = document.getElementById('btnCloseEdit');
 let activeUserId = null;
-
+document.getElementById('btnNuevoUsuario').addEventListener('click', openCreateModal);
+// Update the tbody event listener to call openEditModal
 document.getElementById('usersTableBody').addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-gear');
   if (!btn) return;
 
-  const id   = btn.dataset.id;
-  const user = userData.find(u => u.id === id);
+  const user = userData.find(u => u.id === btn.dataset.id);
   if (!user) return;
 
-  activeUserId = id;
-  const el = document.getElementById('editUserId');
-  el.textContent = `ID: ${id.slice(0, 8)}…`;
-  el.title = id;
-  document.getElementById('editEmail').value    = user.email;
-  document.getElementById('editPassword').value = '';
-  editModal.classList.add('open');
+  openEditModal(user);
 });
+
 
 function handleEditUser(id) {
   const user = userData.find(u => u.id === id);
@@ -85,24 +125,38 @@ function handleEditUser(id) {
   editModal.classList.add('open');
 }
 
-// close buttons
+// close button
 btnCloseEdit.addEventListener('click', () => editModal.classList.remove('open'));
 editModal.addEventListener('click', (e) => {
   if (e.target === editModal) editModal.classList.remove('open');
 });
 
-// save
-document.getElementById('btnSaveUser').addEventListener('click', () => {
-  const emailEdt = document.getElementById('editEmail').value.trim();
-  const passwordEdt = document.getElementById('editPassword').value;
+// Save — handles both modes
+document.getElementById('btnSaveUser').addEventListener('click', async () => {
+  const email    = document.getElementById('editEmail').value.trim();
+  const password = document.getElementById('editPassword').value;
 
-  if (!emailEdt) return;
-  //Agregar a updates solo campos con datos
-  const updates = {};
-  if (emailEdt) updates.email = emailEdt;
-  if (passwordEdt) updates.password = passwordEdt;
-  //fetch
-  updateUser(activeUserId, updates)
+  if (!email || !password) {
+    alert('Por favor completa todos los campos.');
+    return;
+  }
+
+  if (modalMode === 'create') {
+   createUser(email, password)
+    .then(msg => {
+      if (msg.error) {
+        alert(msg.error);
+      } else {
+        alert('Usuario creado');
+        window.location.href = '/editUsers';
+      }
+    });
+    console.log('Crear usuario:', { email, password });
+  } else {
+    const updates = {};
+    if (email) updates.email = email;
+    if (password) updates.password = password;
+    updateUser(activeUserId, updates)
     .then(msg => {
       if(msg.error){
         alert(msg.error)
@@ -111,6 +165,9 @@ document.getElementById('btnSaveUser').addEventListener('click', () => {
         window.location.href = '/editUsers';
       }
     });
+  }
+
+  editModal.classList.remove('open');
 });
 
 // delete

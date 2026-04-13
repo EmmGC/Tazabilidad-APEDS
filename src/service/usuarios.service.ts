@@ -40,3 +40,14 @@ export const deleteUserService = async (userId: string) => {
   if (error) throw error;
   return data;
 };
+
+export const createUserService = async (email: string, password: string) => {
+  const { data, error } = await supabaseUserAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true  // skips the confirmation email
+  });
+
+  if (error) throw error;
+  return data;
+};

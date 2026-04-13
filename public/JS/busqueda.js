@@ -81,7 +81,6 @@ function handleSearch(e) {
         .then(res => res.json())
         .then(data => {
             populateTableAndTitle(table, data[0]);
-            //TODO: Ver como hacerle para acceder a apiURls[x][y] y si esto funciona
             return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
         })
         .then(res => res.json()) 
