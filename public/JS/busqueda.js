@@ -5,28 +5,43 @@ const botonAdelante = document.getElementById('btnNext');
 const botonAtras = document.getElementById('btnPrev');
 const title = document.getElementById('actualTable');
 const table = document.getElementById('resultsTable');
+const searchForm = document.querySelector('.filter-form');
 let resultLength = 0;
-function irAdelante(btn){
-    currentTableindex += 1;
-    botonAtras.disabled = false;
-    if(currentTableindex === resultLength){
-        btn.disabled = true;
-    }
-    renderTableinArray();    
+
+// Event Listeners
+if (botonAdelante) {
+    botonAdelante.addEventListener('click', () => irAdelante());
 }
 
-function irAtras(btn){
-    currentTableindex -= 1;
-    botonAdelante.disabled = false;
-    if(currentTableindex === 0){
-        btn.disabled = true;
+if (botonAtras) {
+    botonAtras.addEventListener('click', () => irAtras());
+}
+
+if (searchForm) {
+    searchForm.addEventListener('submit', (e) => handleSearch(e));
+}
+
+function irAdelante() {
+    currentTableindex += 1;
+    botonAtras.disabled = false;
+    if (currentTableindex === resultLength) {
+        botonAdelante.disabled = true;
     }
     renderTableinArray();
 }
 
-function renderTableinArray(){
-    nextTableID = IDArray[0][apiURls[opciones[currentTableindex]][1]];
-    if(nextTableID !== null){
+function irAtras() {
+    currentTableindex -= 1;
+    botonAdelante.disabled = false;
+    if (currentTableindex === 0) {
+        botonAtras.disabled = true;
+    }
+    renderTableinArray();
+}
+
+function renderTableinArray() {
+    const nextTableID = IDArray[0][apiURls[opciones[currentTableindex]][1]];
+    if (nextTableID !== null) {
         fetch(apiURls[opciones[currentTableindex]][0] + nextTableID)
             .then(res => res.json())
             .then(data => {
@@ -35,9 +50,9 @@ function renderTableinArray(){
             .catch(err => {
                 console.error(err);
             });
-    }else{
+    } else {
         table.innerHTML = '';
-        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_',' ');
+        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_', ' ');
         const header = document.createElement('tr');
         const tableHead = document.createElement('th');
         const sinDatos = document.createElement('b');
@@ -45,12 +60,11 @@ function renderTableinArray(){
         tableHead.appendChild(sinDatos);
         sinDatos.style.fontSize = '25px';
         sinDatos.innerText = 'Sin registro';
-        table.appendChild(header); 
+        table.appendChild(header);
     }
 }
 
-//Poblar menu select
-
+// Poblar menu select
 const opciones = [
     "cliente_final",
     "Embarque",
@@ -75,32 +89,36 @@ const apiURls = {
 }
 
 const menuSelect = document.getElementById('filtroSelect');
-menuSelect.innerHTML = '<option value=""> Buscar por </option>';
-opciones.forEach(opcion => {
-    const option = document.createElement('option');
-    option.innerText = opcion.replaceAll('_', ' ');
-    const opcionEdit = opcion;
-    option.value = opcionEdit;
-    menuSelect.appendChild(option);
-});
+if (menuSelect) {
+    menuSelect.innerHTML = '<option value=""> Buscar por </option>';
+    opciones.forEach(opcion => {
+        const option = document.createElement('option');
+        option.innerText = opcion.replaceAll('_', ' ');
+        option.value = opcion;
+        menuSelect.appendChild(option);
+    });
+}
 
 function handleSearch(e) {
     e.preventDefault();
     table.innerHTML = '';
     const selectValue = document.getElementById('filtroSelect').value;
     const inputNum = document.getElementById('busqueda').value;
+
+    if (!selectValue) return;
+
     const api = apiURls[selectValue][0];
     currentTableindex = opciones.indexOf(selectValue);
-    if(currentTableindex < 0) currentTableindex = 0;
+    if (currentTableindex < 0) currentTableindex = 0;
+
     fetch(api + inputNum)
         .then(res => res.json())
         .then(data => {
             populateTableAndTitle(table, data[0]);
-            return fetch('/api/front/getIDarray/'+inputNum+'/'+apiURls[selectValue][1])
+            return fetch('/api/front/getIDarray/' + inputNum + '/' + apiURls[selectValue][1])
         })
-        .then(res => res.json()) 
+        .then(res => res.json())
         .then(array => {
-            console.log(array);
             IDArray = array;
             resultLength = Object.keys(IDArray[0]).length;
         })
@@ -110,8 +128,6 @@ function handleSearch(e) {
 }
 
 //----------------------------------- Funciones para poblar la tabla con datos ---------------------------------------
-// Recursively flattens a nested object into dot-notation keys
-// e.g. { insumos_agricolas: { nombre_comercial: "X" } } → { "insumos_agricolas.nombre_comercial": "X" }
 function flattenObject(obj, prefix = "") {
     return Object.entries(obj).reduce((acc, [key, value]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -126,8 +142,6 @@ function flattenObject(obj, prefix = "") {
     }, {});
 }
 
-// Formats a key into a readable column title
-// e.g. "insumos_agricolas.nombre_comercial" → "Insumos agricolas nombre comercial"
 function formatTitle(key) {
     return key
         .replace(/[-_.]/g, " ")
@@ -138,24 +152,21 @@ function populateTableAndTitle(table, data) {
     try {
         botonAdelante.disabled = false;
         botonAtras.disabled = false;
-        if(currentTableindex === 0){
+        if (currentTableindex === 0) {
             botonAtras.disabled = true;
-        }else if (currentTableindex === resultLength) {
+        } else if (currentTableindex === resultLength) {
             botonAdelante.disabled = true;
         }
-        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_',' ');
+        title.innerText = 'Tabla actual: ' + opciones[currentTableindex].replaceAll('_', ' ');
         table.innerHTML = '';
-        if (data === undefined || data === null){
+        if (data === undefined || data === null) {
             throw new Error();
         }
-        // Normalize: accept both a single object and an array of objects
-        const rows = Array.isArray(data) ? data : [data];
 
-        // Flatten every row and collect all unique keys across all rows
+        const rows = Array.isArray(data) ? data : [data];
         const flatRows = rows.map(row => flattenObject(row));
         const allKeys = [...new Set(flatRows.flatMap(row => Object.keys(row)))];
 
-        // Build <thead>
         const thead = document.createElement("thead");
         const titleRow = document.createElement("tr");
 
@@ -168,7 +179,6 @@ function populateTableAndTitle(table, data) {
         thead.appendChild(titleRow);
         table.appendChild(thead);
 
-        // Build <tbody> — one <tr> per record
         const tbody = document.createElement("tbody");
 
         flatRows.forEach(flatRow => {
@@ -196,6 +206,6 @@ function populateTableAndTitle(table, data) {
         tableHead.appendChild(sinDatos);
         sinDatos.style.fontSize = '25px';
         sinDatos.innerText = 'No se encontro información';
-        table.appendChild(header); 
+        table.appendChild(header);
     }
 }

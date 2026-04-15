@@ -1,0 +1,27 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --navy: #3d5166;
+    --navy-dark: #2e3f52;
+    --accent: #5c7a96;
+    --bg: #f0f3f6;
+    --surface: #ffffff;
+    --border: #c8d3dd;
+    --text: #1e2d3d;
+    --muted: #7a8fa0;
+    --btn-bg: #8ca4b8;
+    --btn-hover: #6e8fa8;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}

@@ -68,6 +68,15 @@ app.get('/busqueda', async (req, res) => {
 
   res.sendFile(path.join(__dirname, 'public', 'html', 'busqueda.html'))
 })
+//Pagina para realizar nuevos registros
+app.get('/registro', async (req, res) => {
+  const token = req.cookies?.access_token
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+  if (error || !user) return res.redirect('/')
+
+  res.sendFile(path.join(__dirname, 'public', 'html', 'registro.html'))
+})
 //Pagina de manejo de usuarios
 app.get('/editUsers', async (req, res) => {
   const token = req.cookies?.access_token
