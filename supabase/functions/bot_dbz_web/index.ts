@@ -55,12 +55,15 @@ const schemas = {
     equipo_aplicacion: z.string().optional(),
     lavado: z.boolean().optional(),
     desinfeccion: z.boolean().optional(),
+    responsable_aplicacion: z.string().optional(),
     observaciones: z.string().optional()
   }),
   'Detalle_Aplicacion_Insumos': z.object({
     dosis_aplicada: z.number().optional(),
     unidad_dosis: z.string().optional(),
-    nombre_insumo: z.string().optional()
+    nombre_insumo: z.string().optional(),
+    actividad_relacionada: z.string().optional(),
+    responsable_mezcla: z.string().optional()
   }),
   'Historial_Transporte_Lotes': z.object({
     placas_transporte: z.string().optional(),
@@ -124,8 +127,8 @@ Deno.serve(async (req: Request) => {
     let camposRequeridos = ''
     if (tablaAsignada === 'Recepcion_Insumos') camposRequeridos = "Proveedor del producto\nInsumo recibido\nCantidad (L, Kg, etc.)\nLote (opcional)\nFecha de Caducidad (opcional)\nNúmero de Factura (opcional)"
     else if (tablaAsignada === 'Lotes_Cosecha') camposRequeridos = "Sección de cultivo\nFecha de cosecha\nAño\nCantidad de Cajas\nPeso Total\nUso de cultivo (ej. consumo nacional)\nCalidad\nCalibre\nColor\nObservaciones"
-    else if (tablaAsignada === 'Bitacora_Actividades') camposRequeridos = "Sección de cultivo\nTipo de actividad\nEquipo de aplicación\nLavado (sí/no)\nDesinfección (sí/no)\nObservaciones"
-    else if (tablaAsignada === 'Detalle_Aplicacion_Insumos') camposRequeridos = "Nombre del insumo comercial\nDosis\nUnidad (ej. Litros)"
+    else if (tablaAsignada === 'Bitacora_Actividades') camposRequeridos = "Sección de cultivo\nTipo de actividad\nEquipo de aplicación\nLavado (sí/no)\nDesinfección (sí/no)\nResponsable de aplicación\nObservaciones"
+    else if (tablaAsignada === 'Detalle_Aplicacion_Insumos') camposRequeridos = "Actividad a la que pertenece\nNombre del insumo comercial\nDosis\nUnidad (ej. Litros)\nResponsable de la mezcla"
     else if (tablaAsignada === 'Historial_Transporte_Lotes') camposRequeridos = "Placas\nCliente Destino\nCajas Transportadas\nPeso Transportado (kg)\nTemp. Inicial\nTemp. de Llegada\nNo. de Documento\nIncidencias\nEntregado Completo (sí/no)\nVehículo Limpio (sí/no)"
 
     const msjBienvenida = `🔹 Perfil activo: *${tablaAsignada}*\n\n📝 Para iniciar un registro en esta bitácora, descríbeme tu actividad o manda los datos (te preguntaré lo que falte). Suelo requerir esto:\n\n${camposRequeridos}\n\nEnvía *cancelar* o *reiniciar* en cualquier momento para borrar mi memoria y empezar de nuevo.`
@@ -157,9 +160,9 @@ Deno.serve(async (req: Request) => {
       extractSchemaStr = `{"seccion_cultivo": "string", "fecha_cosecha": "YYYY-MM-DD", "anio_cosecha": "numero integer", "cantidad_cajas": "numero integer", "peso_kg": "numero decimal", "uso_cultivo": "string", "calidad": "string", "calibre": "string", "color": "string", "observaciones_calidad": "string"}`
     } else if (tablaAsignada === 'Bitacora_Actividades') {
       // Nota: id_seccion debe pedirse si es requerido, aquí asumimos seccion_cultivo
-      extractSchemaStr = `{"seccion_cultivo": "string", "tipo_actividad": "string", "equipo_aplicacion": "string", "lavado": "boolean", "desinfeccion": "boolean", "observaciones": "string"}`
+      extractSchemaStr = `{"seccion_cultivo": "string", "tipo_actividad": "string", "equipo_aplicacion": "string", "lavado": "boolean", "desinfeccion": "boolean", "responsable_aplicacion": "string", "observaciones": "string"}`
     } else if (tablaAsignada === 'Detalle_Aplicacion_Insumos') {
-      extractSchemaStr = `{"dosis_aplicada": "numero", "unidad_dosis": "string (ej. litros)", "nombre_insumo": "string"}`
+      extractSchemaStr = `{"dosis_aplicada": "numero", "unidad_dosis": "string (ej. litros)", "nombre_insumo": "string", "actividad_relacionada": "string", "responsable_mezcla": "string"}`
     } else if (tablaAsignada === 'Historial_Transporte_Lotes') {
       extractSchemaStr = `{"placas_transporte": "string", "nombre_cliente": "string", "cajas_transportadas": "numero", "peso_transportado_kg": "numero", "temperatura_salida": "numero", "temperatura_llegada": "numero", "documento_entrega": "string", "incidencias": "string", "entregado_completo": "boolean", "vehiculo_lavado_desinfectado": "boolean"}`
     } else {
@@ -305,8 +308,8 @@ Deno.serve(async (req: Request) => {
         equipo_aplicacion: parsedData.equipo_aplicacion,
         lavado: parsedData.lavado,
         desinfeccion: parsedData.desinfeccion,
-        observaciones: parsedData.observaciones,
-        responsable_aplicacion: perfil.nombre
+        responsable_aplicacion: parsedData.responsable_aplicacion || perfil.nombre,
+        observaciones: parsedData.observaciones
       }
       const { error: insertError } = await supabase.from('bitacora_actividades').insert([insertPayload])
       if (insertError) {
@@ -318,21 +321,30 @@ Deno.serve(async (req: Request) => {
 
     } else if (tablaAsignada === 'Detalle_Aplicacion_Insumos') {
       let id_insumo = null
+      let id_actividad = null
+
+      if (parsedData.actividad_relacionada) {
+        const { data: acts } = await supabase.from('bitacora_actividades').select('id_actividad').ilike('tipo_actividad', `%${parsedData.actividad_relacionada}%`).limit(1)
+        if (acts && acts.length > 0) id_actividad = acts[0].id_actividad
+      }
+
       if (parsedData.nombre_insumo) {
         const { data: insumos } = await supabase.from('insumos_agricolas').select('id_insumo').ilike('nombre_comercial', `%${parsedData.nombre_insumo}%`).limit(1)
         if (insumos && insumos.length > 0) id_insumo = insumos[0].id_insumo
       }
+      
       const insertPayload = {
+        id_actividad,
         id_insumo,
         dosis_aplicada: parsedData.dosis_aplicada,
         unidad_dosis: parsedData.unidad_dosis,
-        responsable_mezcla: perfil.nombre
+        responsable_mezcla: parsedData.responsable_mezcla || perfil.nombre
       }
       const { error: insertError } = await supabase.from('detalle_aplicacion_insumos').insert([insertPayload])
       if (insertError) {
         await sendTelegramMessage(telegramId, '❌ Hubo un error al guardar la aplicación.')
       } else {
-        await sendTelegramMessage(telegramId, `✅ ¡Aplicación de insumo guardada exitosamente!\nInsumo BD: ${id_insumo || 'No encontrado'}`, restartMarkup)
+        await sendTelegramMessage(telegramId, `✅ ¡Aplicación de insumo guardada exitosamente!\nActividad BD: ${id_actividad || 'No encontrada'}\nInsumo BD: ${id_insumo || 'No encontrado'}\nResponsable: ${insertPayload.responsable_mezcla}`, restartMarkup)
         await supabase.from('historial_chat_bot').delete().eq('telegram_id', telegramId)
       }
 
