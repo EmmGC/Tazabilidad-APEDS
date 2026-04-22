@@ -226,7 +226,7 @@ CREATE OR REPLACE FUNCTION public.crear_perfil()
 RETURNS trigger AS $$
 BEGIN
   INSERT INTO public.Perfiles_Usuarios (id, rol, nombre) 
-  VALUES (new.id, 'Produccion', COALESCE(new.raw_user_meta_data->>'nombre', 'Usuario Nuevo')); 
+  VALUES (new.id, 'Administrador', COALESCE(new.raw_user_meta_data->>'nombre', 'Usuario Nuevo')); 
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
