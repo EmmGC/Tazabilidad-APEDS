@@ -2,6 +2,11 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const profileBtn  = document.getElementById('profileBtn');
 const modal       = document.getElementById('profileModal');
+const name = localStorage.getItem('name');
+const email = localStorage.getItem('email');
+
+document.getElementById('modalName').innerText = name;
+document.getElementById('modalEmail').innerText = email;
 
 profileBtn.addEventListener('click', (e) => {
   e.stopPropagation();
