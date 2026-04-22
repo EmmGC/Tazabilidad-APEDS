@@ -241,15 +241,19 @@ RETURNS trigger AS $$
 DECLARE
     nombre_real VARCHAR(100);
 BEGIN
-    SELECT nombre INTO nombre_real FROM public.Perfiles_Usuarios WHERE id = auth.uid();
+    -- Intentar obtener el nombre si proviene de la web (auth.uid existe)
+    IF auth.uid() IS NOT NULL THEN
+        SELECT nombre INTO nombre_real FROM public.Perfiles_Usuarios WHERE id = auth.uid();
+    END IF;
     
     -- Manejo de nombres de tabla en minúsculas (estándar de Postgres)
-    IF TG_TABLE_NAME = 'recepcion_insumos' THEN NEW.responsable_recepcion := nombre_real;
-    ELSIF TG_TABLE_NAME = 'bitacora_actividades' THEN NEW.responsable_aplicacion := nombre_real;
-    ELSIF TG_TABLE_NAME = 'detalle_aplicacion_insumos' THEN NEW.responsable_mezcla := nombre_real;
+    -- Usar COALESCE para que, si no hay web user (nombre_real es null), se respete el valor que manda el Bot (NEW.*)
+    IF TG_TABLE_NAME = 'recepcion_insumos' THEN NEW.responsable_recepcion := COALESCE(nombre_real, NEW.responsable_recepcion);
+    ELSIF TG_TABLE_NAME = 'bitacora_actividades' THEN NEW.responsable_aplicacion := COALESCE(nombre_real, NEW.responsable_aplicacion);
+    ELSIF TG_TABLE_NAME = 'detalle_aplicacion_insumos' THEN NEW.responsable_mezcla := COALESCE(nombre_real, NEW.responsable_mezcla);
     ELSIF TG_TABLE_NAME = 'historial_transporte_lotes' THEN
-        IF TG_OP = 'INSERT' THEN NEW.responsable_carga := nombre_real;
-        ELSIF TG_OP = 'UPDATE' THEN NEW.responsable_entrega := nombre_real;
+        IF TG_OP = 'INSERT' THEN NEW.responsable_carga := COALESCE(nombre_real, NEW.responsable_carga);
+        ELSIF TG_OP = 'UPDATE' THEN NEW.responsable_entrega := COALESCE(nombre_real, NEW.responsable_entrega);
         END IF;
     END IF;
     RETURN NEW;
