@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Usuarios Telegram</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:      #3d5166;
+      --navy-dark: #2e3f52;
+      --accent:    #5c7a96;
+      --bg:        #f0f3f6;
+      --surface:   #ffffff;
+      --border:    #c8d3dd;
+      --text:      #1e2d3d;
+      --muted:     #7a8fa0;
+      --btn-bg:    #8ca4b8;
+      --btn-hover: #6e8fa8;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      height: 72px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      margin-right: auto;
+    }
+
+    .nav-logo img { height: 52px; width: auto; }
+    .nav-logo svg { width: 52px; height: 52px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      list-style: none;
+      margin-right: 40px;
+    }
+
+    .nav-links a {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #d4dfe9;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover { color: #fff; }
+
+    .nav-links a.active {
+      color: #fff;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .nav-profile { cursor: pointer; }
+    .nav-profile svg { width: 40px; height: 40px; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1100px;
+      margin: 44px auto;
+      padding: 0 24px;
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-title svg {
+      color: var(--accent);
+    }
+
+    .btn-nuevo {
+      background: var(--btn-bg);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 11px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, transform .1s;
+    }
+
+    .btn-nuevo:hover  { background: var(--btn-hover); }
+    .btn-nuevo:active { transform: scale(.97); }
+
+    /* ── TABLE ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(61,81,102,.07);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    col.col-id     { width: 160px; }
+    col.col-nombre { width: 25%; }
+    col.col-tabla  { width: auto; }
+    col.col-action { width: 56px; }
+
+    thead th {
+      background: var(--surface);
+      padding: 14px 20px;
+      text-align: center;
+      font-family: 'Syne', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .05em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover      { background: #f5f8fb; }
+
+    tbody td {
+      padding: 14px 20px;
+      font-size: .9rem;
+      color: var(--text);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    td.td-id {
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    /* tabla badge */
+    .tabla-badge {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+
+    td.td-action {
+      text-align: center;
+      padding: 0 12px;
+    }
+
+    .btn-gear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, color .15s, transform .2s;
+    }
+
+    .btn-gear:hover {
+      background: var(--bg);
+      color: var(--navy);
+      transform: rotate(30deg);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    /* ── SHARED MODAL BASE ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 45, 61, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── EDIT / CREATE MODAL ── */
+    .edit-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(30,45,61,.18);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transform: translateY(12px);
+      transition: transform .2s ease;
+    }
+
+    .modal-overlay.open .edit-card { transform: translateY(0); }
+
+    .edit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .edit-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .02em;
+    }
+
+    .edit-user-id {
+      font-size: .78rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 10px;
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .edit-field label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .edit-field input,
+    .edit-field select {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .92rem;
+      color: var(--text);
+      transition: border-color .2s;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .edit-field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8fa0' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    .edit-field input:focus,
+    .edit-field select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .edit-field input::placeholder { color: var(--muted); }
+
+    .field-hint {
+      font-size: .74rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .edit-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn-save {
+      width: 100%;
+      background: var(--btn-bg);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 11px 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, transform .1s;
+    }
+
+    .btn-save:hover  { background: var(--btn-hover); }
+    .btn-save:active { transform: scale(.97); }
+
+    .btn-delete {
+      width: 100%;
+      background: transparent;
+      border: 1.5px solid #e2b8b8;
+      border-radius: 999px;
+      padding: 10px 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 600;
+      color: #a03030;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+
+    .btn-delete:hover {
+      background: #a03030;
+      border-color: #a03030;
+      color: #fff;
+    }
+
+    .btn-close-edit {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .15s, background .15s;
+    }
+
+    .btn-close-edit:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ── PROFILE MODAL ── */
+    .profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 45, 61, 0.45);
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 80px 28px 0;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .profile-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .profile-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px 20px;
+      width: 260px;
+      box-shadow: 0 8px 32px rgba(30,45,61,.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transform: translateY(-8px);
+      transition: transform .2s ease;
+    }
+
+    .profile-overlay.open .profile-card { transform: translateY(0); }
+
+    .profile-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .profile-avatar svg { width: 30px; height: 30px; }
+
+    .profile-name  { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .profile-email { font-size: .82rem; color: var(--muted); margin-bottom: 16px; }
+    .profile-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 16px; }
+
+    .btn-logout {
+      width: 100%;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 9px 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--navy);
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+
+    .btn-logout:hover {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+    <nav class="headerContainer">
+        <div class="nav-logo">
+            <img src='../static/Logo trazabilidad.svg' alt="Logo">
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="/registro">Realizar registro</a></li>
+            <li><a href="/busqueda">Ver registros</a></li>
+            <li><a href="/editUsers" class="active">Administracion</a></li>
+        </ul>
+        <div id="profileBtn" class="nav-profile">
+            <!-- Profile / user icon -->
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="19" stroke="#a8c0d6" stroke-width="1.8" fill="none" />
+                <circle cx="20" cy="16" r="6" fill="#a8c0d6" />
+                <path d="M8 34c0-6.627 5.373-10 12-10s12 3.373 12 10" fill="#a8c0d6" />
+            </svg>
+        </div>
+    </nav>
+<!-- ── MAIN ── -->
+<main>
+  <div class="top-bar">
+    <h1 class="page-title">
+      <!-- Telegram paper-plane icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+      Usuarios Telegram
+    </h1>
+    <button class="btn-nuevo" id="btnNuevoUsuario">Nuevo usuario</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <colgroup>
+        <col class="col-id"/>
+        <col class="col-nombre"/>
+        <col class="col-tabla"/>
+        <col class="col-action"/>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Telegram ID</th>
+          <th>Nombre</th>
+          <th>Tabla Asignada</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="usersTableBody">
+        <tr>
+          <td colspan="4" class="empty-state">Cargando usuarios…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- ── EDIT / CREATE MODAL ── -->
+<div class="modal-overlay" id="editModal">
+  <div class="edit-card">
+    <div class="edit-header">
+      <span class="edit-title" id="editModalTitle">Editar usuario</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="edit-user-id" id="editUserId"></span>
+        <button class="btn-close-edit" id="btnCloseEdit" title="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Only shown in create mode -->
+    <div class="edit-field" id="fieldTelegramId">
+      <label for="editTelegramId">Telegram ID</label>
+      <input type="number" id="editTelegramId" placeholder="ej. 123456789"/>
+      <span class="field-hint">ID numérico del usuario en Telegram.</span>
+    </div>
+
+    <div class="edit-field">
+      <label for="editNombre">Nombre</label>
+      <input type="text" id="editNombre" placeholder="Nombre del usuario"/>
+    </div>
+
+    <div class="edit-field">
+      <label for="editTabla">Tabla Asignada</label>
+      <select id="editTabla">
+        <option value="" disabled selected>Seleccionar tabla…</option>
+        <option value="Recepcion_Insumos">Recepcion_Insumos</option>
+        <option value="Bitacora_Actividades">Bitacora_Actividades</option>
+        <option value="Detalle_Aplicacion_Insumos">Detalle_Aplicacion_Insumos</option>
+        <option value="Lotes_Cosecha">Lotes_Cosecha</option>
+        <option value="Historial_Transporte_Lotes">Historial_Transporte_Lotes</option>
+      </select>
+    </div>
+
+    <div class="edit-actions">
+      <button class="btn-save" id="btnSaveUser">Guardar cambios</button>
+      <button class="btn-delete" id="btnDeleteUser">Eliminar usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROFILE MODAL ── -->
+<div class="profile-overlay" id="profileModal">
+  <div class="profile-card">
+    <div class="profile-avatar">
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="16" r="7" fill="#a8c0d6"/>
+        <path d="M6 38c0-7.732 6.268-12 14-12s14 4.268 14 12" fill="#a8c0d6"/>
+      </svg>
+    </div>
+    <span class="profile-name"  id="modalName">Nombre de usuario</span>
+    <span class="profile-email" id="modalEmail">usuario@correo.com</span>
+    <div class="profile-divider"></div>
+    <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+  </div>
+</div>
+
+<script>
+  /* ── DATA ── */
+  let userData = [];
+  let activeUserId = null;
+  let modalMode = 'create'; // 'create' | 'edit'
+
+  /* ── SAMPLE DATA — replace getUsers() with your Supabase call ── */
+  async function getUsers() {
+    // TODO: const { data } = await supabase.from('perfiles_bot').select('*');
+    // return data;
+    return [
+      { telegram_id: 123456789, nombre: 'Santiago Martínez', tabla_asignada: 'Recepcion_Insumos' },
+      { telegram_id: 987654321, nombre: 'Valentina Pérez',   tabla_asignada: 'Lotes_Cosecha' },
+      { telegram_id: 555000111, nombre: 'Diego Castillo',    tabla_asignada: 'Bitacora_Actividades' },
+    ];
+  }
+
+  /* ── RENDER TABLE ── */
+  function renderUsers(users) {
+    const tbody = document.getElementById('usersTableBody');
+
+    if (!users.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No hay usuarios registrados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td class="td-id">${u.telegram_id}</td>
+        <td>${u.nombre ?? '<span style="color:var(--muted);font-style:italic">Sin nombre</span>'}</td>
+        <td>
+          ${u.tabla_asignada
+            ? `<span class="tabla-badge">${u.tabla_asignada}</span>`
+            : `<span style="color:var(--muted);font-style:italic;font-size:.85rem">Sin asignar</span>`}
+        </td>
+        <td class="td-action">
+          <button class="btn-gear" data-id="${u.telegram_id}" title="Configurar usuario">
+            <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor">
+              <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  /* ── LOAD ── */
+  getUsers().then(users => {
+    userData = users;
+    renderUsers(users);
+  });
+
+  /* ── GEAR CLICK via delegation ── */
+  document.getElementById('usersTableBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-gear');
+    if (!btn) return;
+
+    const id   = Number(btn.dataset.id);
+    const user = userData.find(u => u.telegram_id === id);
+    if (!user) return;
+
+    openEditModal(user);
+  });
+
+  /* ── MODAL HELPERS ── */
+  const editModal = document.getElementById('editModal');
+
+  function openEditModal(user) {
+    modalMode   = 'edit';
+    activeUserId = user.telegram_id;
+
+    document.getElementById('editModalTitle').textContent = 'Editar usuario';
+
+    // Show ID badge, hide Telegram ID input field
+    const badge = document.getElementById('editUserId');
+    badge.textContent = `ID: ${user.telegram_id}`;
+    badge.style.display = '';
+
+    document.getElementById('fieldTelegramId').style.display = 'none';
+    document.getElementById('editTelegramId').value          = '';
+
+    document.getElementById('editNombre').value = user.nombre ?? '';
+    document.getElementById('editTabla').value  = user.tabla_asignada ?? '';
+    document.getElementById('btnDeleteUser').style.display = '';
+
+    editModal.classList.add('open');
+  }
+
+  function openCreateModal() {
+    modalMode    = 'create';
+    activeUserId = null;
+
+    document.getElementById('editModalTitle').textContent = 'Nuevo usuario';
+
+    // Hide badge, show Telegram ID input
+    document.getElementById('editUserId').style.display      = 'none';
+    document.getElementById('fieldTelegramId').style.display = '';
+
+    document.getElementById('editTelegramId').value = '';
+    document.getElementById('editNombre').value     = '';
+    document.getElementById('editTabla').value      = '';
+    document.getElementById('btnDeleteUser').style.display = 'none';
+
+    editModal.classList.add('open');
+  }
+
+  function closeEditModal() {
+    editModal.classList.remove('open');
+  }
+
+  document.getElementById('btnNuevoUsuario').addEventListener('click', openCreateModal);
+  document.getElementById('btnCloseEdit').addEventListener('click', closeEditModal);
+  editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
+
+  /* ── SAVE ── */
+  document.getElementById('btnSaveUser').addEventListener('click', async () => {
+    const nombre = document.getElementById('editNombre').value.trim();
+    const tabla  = document.getElementById('editTabla').value;
+
+    if (!tabla) {
+      alert('Por favor selecciona una tabla asignada.');
+      return;
+    }
+
+    if (modalMode === 'create') {
+      const telegramId = document.getElementById('editTelegramId').value.trim();
+      if (!telegramId) {
+        alert('Por favor ingresa el Telegram ID.');
+        return;
+      }
+      // TODO:
+      // await supabase.from('perfiles_bot').insert({ telegram_id: Number(telegramId), nombre, tabla_asignada: tabla });
+      console.log('Crear usuario Telegram:', { telegram_id: Number(telegramId), nombre, tabla_asignada: tabla });
+    } else {
+      // TODO:
+      // await supabase.from('perfiles_bot').update({ nombre, tabla_asignada: tabla }).eq('telegram_id', activeUserId);
+      console.log('Actualizar usuario Telegram:', { telegram_id: activeUserId, nombre, tabla_asignada: tabla });
+    }
+
+    closeEditModal();
+    // TODO: refresh table after save
+    // getUsers().then(u => { userData = u; renderUsers(u); });
+  });
+
+  /* ── DELETE ── */
+  document.getElementById('btnDeleteUser').addEventListener('click', async () => {
+    if (!confirm(`¿Eliminar el usuario con Telegram ID ${activeUserId}? Esta acción no se puede deshacer.`)) return;
+    // TODO:
+    // await supabase.from('perfiles_bot').delete().eq('telegram_id', activeUserId);
+    console.log('Eliminar usuario Telegram ID:', activeUserId);
+    closeEditModal();
+    // TODO: refresh table after delete
+    // getUsers().then(u => { userData = u; renderUsers(u); });
+  });
+
+  /* ── PROFILE MODAL ── */
+  const profileModal = document.getElementById('profileModal');
+
+  document.getElementById('profileBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    profileModal.classList.toggle('open');
+  });
+
+  profileModal.addEventListener('click', (e) => {
+    if (e.target === profileModal) profileModal.classList.remove('open');
+  });
+
+  function setModalUser(name, email) {
+    document.getElementById('modalName').textContent  = name;
+    document.getElementById('modalEmail').textContent = email;
+  }
+
+  document.getElementById('btnLogout').addEventListener('click', () => {
+    // TODO: await supabase.auth.signOut(); window.location.href = '/login';
+    console.log('Cerrar sesión');
+  });
+</script>
+</body>
+</html>
