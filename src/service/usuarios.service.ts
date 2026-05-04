@@ -45,9 +45,24 @@ export const createUserService = async (email: string, password: string) => {
   const { data, error } = await supabaseUserAdmin.auth.admin.createUser({
     email,
     password,
-    email_confirm: true  // skips the confirmation email
+    email_confirm: true
   });
 
   if (error) throw error;
+
+  // Insert into perfiles_usuarios using the same UUID
+  const { error: profileError } = await supabaseUserAdmin
+    .from('perfiles_usuarios')
+    .insert({
+      id: data.user.id,  // same UUID as auth.users
+      nombre: email,
+      rol: 'Administrador'
+    });
+
+  if (profileError) throw profileError;
+  if (profileError) {
+    await supabaseUserAdmin.auth.admin.deleteUser(data.user.id);
+    throw profileError;
+  }
   return data;
 };
