@@ -73,9 +73,6 @@
       text-underline-offset: 4px;
     }
 
-    .nav-profile { cursor: pointer; }
-    .nav-profile svg { width: 40px; height: 40px; }
-
     /* ── MAIN ── */
     main {
       max-width: 1100px;
@@ -478,6 +475,9 @@
       color: #fff;
     }
   </style>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/header.css">
+  <link rel="stylesheet" href="../css/userModal.css">
 </head>
 <body>
 
@@ -546,21 +546,17 @@
   <div class="edit-card">
     <div class="edit-header">
       <span class="edit-title" id="editModalTitle">Editar usuario</span>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span class="edit-user-id" id="editUserId"></span>
-        <button class="btn-close-edit" id="btnCloseEdit" title="Cerrar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
+      <button class="btn-close-edit" id="btnCloseEdit" title="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- Only shown in create mode -->
-    <div class="edit-field" id="fieldTelegramId">
+    <div class="edit-field">
       <label for="editTelegramId">Telegram ID</label>
       <input type="number" id="editTelegramId" placeholder="ej. 123456789"/>
       <span class="field-hint">ID numérico del usuario en Telegram.</span>
@@ -606,182 +602,7 @@
   </div>
 </div>
 
-<script>
-  /* ── DATA ── */
-  let userData = [];
-  let activeUserId = null;
-  let modalMode = 'create'; // 'create' | 'edit'
-
-  /* ── SAMPLE DATA — replace getUsers() with your Supabase call ── */
-  async function getUsers() {
-    // TODO: const { data } = await supabase.from('perfiles_bot').select('*');
-    // return data;
-    return [
-      { telegram_id: 123456789, nombre: 'Santiago Martínez', tabla_asignada: 'Recepcion_Insumos' },
-      { telegram_id: 987654321, nombre: 'Valentina Pérez',   tabla_asignada: 'Lotes_Cosecha' },
-      { telegram_id: 555000111, nombre: 'Diego Castillo',    tabla_asignada: 'Bitacora_Actividades' },
-    ];
-  }
-
-  /* ── RENDER TABLE ── */
-  function renderUsers(users) {
-    const tbody = document.getElementById('usersTableBody');
-
-    if (!users.length) {
-      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No hay usuarios registrados.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = users.map(u => `
-      <tr>
-        <td class="td-id">${u.telegram_id}</td>
-        <td>${u.nombre ?? '<span style="color:var(--muted);font-style:italic">Sin nombre</span>'}</td>
-        <td>
-          ${u.tabla_asignada
-            ? `<span class="tabla-badge">${u.tabla_asignada}</span>`
-            : `<span style="color:var(--muted);font-style:italic;font-size:.85rem">Sin asignar</span>`}
-        </td>
-        <td class="td-action">
-          <button class="btn-gear" data-id="${u.telegram_id}" title="Configurar usuario">
-            <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor">
-              <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/>
-            </svg>
-          </button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  /* ── LOAD ── */
-  getUsers().then(users => {
-    userData = users;
-    renderUsers(users);
-  });
-
-  /* ── GEAR CLICK via delegation ── */
-  document.getElementById('usersTableBody').addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-gear');
-    if (!btn) return;
-
-    const id   = Number(btn.dataset.id);
-    const user = userData.find(u => u.telegram_id === id);
-    if (!user) return;
-
-    openEditModal(user);
-  });
-
-  /* ── MODAL HELPERS ── */
-  const editModal = document.getElementById('editModal');
-
-  function openEditModal(user) {
-    modalMode   = 'edit';
-    activeUserId = user.telegram_id;
-
-    document.getElementById('editModalTitle').textContent = 'Editar usuario';
-
-    // Show ID badge, hide Telegram ID input field
-    const badge = document.getElementById('editUserId');
-    badge.textContent = `ID: ${user.telegram_id}`;
-    badge.style.display = '';
-
-    document.getElementById('fieldTelegramId').style.display = 'none';
-    document.getElementById('editTelegramId').value          = '';
-
-    document.getElementById('editNombre').value = user.nombre ?? '';
-    document.getElementById('editTabla').value  = user.tabla_asignada ?? '';
-    document.getElementById('btnDeleteUser').style.display = '';
-
-    editModal.classList.add('open');
-  }
-
-  function openCreateModal() {
-    modalMode    = 'create';
-    activeUserId = null;
-
-    document.getElementById('editModalTitle').textContent = 'Nuevo usuario';
-
-    // Hide badge, show Telegram ID input
-    document.getElementById('editUserId').style.display      = 'none';
-    document.getElementById('fieldTelegramId').style.display = '';
-
-    document.getElementById('editTelegramId').value = '';
-    document.getElementById('editNombre').value     = '';
-    document.getElementById('editTabla').value      = '';
-    document.getElementById('btnDeleteUser').style.display = 'none';
-
-    editModal.classList.add('open');
-  }
-
-  function closeEditModal() {
-    editModal.classList.remove('open');
-  }
-
-  document.getElementById('btnNuevoUsuario').addEventListener('click', openCreateModal);
-  document.getElementById('btnCloseEdit').addEventListener('click', closeEditModal);
-  editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
-
-  /* ── SAVE ── */
-  document.getElementById('btnSaveUser').addEventListener('click', async () => {
-    const nombre = document.getElementById('editNombre').value.trim();
-    const tabla  = document.getElementById('editTabla').value;
-
-    if (!tabla) {
-      alert('Por favor selecciona una tabla asignada.');
-      return;
-    }
-
-    if (modalMode === 'create') {
-      const telegramId = document.getElementById('editTelegramId').value.trim();
-      if (!telegramId) {
-        alert('Por favor ingresa el Telegram ID.');
-        return;
-      }
-      // TODO:
-      // await supabase.from('perfiles_bot').insert({ telegram_id: Number(telegramId), nombre, tabla_asignada: tabla });
-      console.log('Crear usuario Telegram:', { telegram_id: Number(telegramId), nombre, tabla_asignada: tabla });
-    } else {
-      // TODO:
-      // await supabase.from('perfiles_bot').update({ nombre, tabla_asignada: tabla }).eq('telegram_id', activeUserId);
-      console.log('Actualizar usuario Telegram:', { telegram_id: activeUserId, nombre, tabla_asignada: tabla });
-    }
-
-    closeEditModal();
-    // TODO: refresh table after save
-    // getUsers().then(u => { userData = u; renderUsers(u); });
-  });
-
-  /* ── DELETE ── */
-  document.getElementById('btnDeleteUser').addEventListener('click', async () => {
-    if (!confirm(`¿Eliminar el usuario con Telegram ID ${activeUserId}? Esta acción no se puede deshacer.`)) return;
-    // TODO:
-    // await supabase.from('perfiles_bot').delete().eq('telegram_id', activeUserId);
-    console.log('Eliminar usuario Telegram ID:', activeUserId);
-    closeEditModal();
-    // TODO: refresh table after delete
-    // getUsers().then(u => { userData = u; renderUsers(u); });
-  });
-
-  /* ── PROFILE MODAL ── */
-  const profileModal = document.getElementById('profileModal');
-
-  document.getElementById('profileBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    profileModal.classList.toggle('open');
-  });
-
-  profileModal.addEventListener('click', (e) => {
-    if (e.target === profileModal) profileModal.classList.remove('open');
-  });
-
-  function setModalUser(name, email) {
-    document.getElementById('modalName').textContent  = name;
-    document.getElementById('modalEmail').textContent = email;
-  }
-
-  document.getElementById('btnLogout').addEventListener('click', () => {
-    // TODO: await supabase.auth.signOut(); window.location.href = '/login';
-    console.log('Cerrar sesión');
-  });
-</script>
+<script src="../JS/userModal.js" type="module"></script>
+<script src="../JS/editTelegram.js" type="module"></script>
 </body>
 </html>

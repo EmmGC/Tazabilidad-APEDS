@@ -66,3 +66,56 @@ export const createUserService = async (email: string, password: string) => {
   }
   return data;
 };
+
+// Telegram
+export const getAllTelegramUsersService = async () => {
+
+  const { data, error } = await supabase.from('perfiles_bot').select('*');
+
+  if (error) throw error
+  return data
+}
+
+export const createTelegramUserService = async (TelID: string, Nombre: string, TablaAsig: string) => {
+  const { data, error } = await supabase
+    .from('perfiles_bot')
+    .insert([
+      {
+        telegram_id: TelID,
+        nombre: Nombre,
+        tabla_asignada: TablaAsig
+      }
+    ])
+    .select()
+
+  if (error) throw error
+
+  return data
+};
+
+export const updateTelegramUserService = async (
+    original_telegram_id: string,
+    telegram_id: string,
+    nombre: string,
+    tabla_asignada: string
+) => {
+    const { data, error } = await supabase
+        .from('perfiles_bot')
+        .update({ telegram_id, nombre, tabla_asignada })
+        .eq('telegram_id', original_telegram_id)
+        .select();
+
+    if (error) throw error;
+    return data;
+};
+
+export const deleteTelegramUserService = async (telegram_id: string) => {
+    const { data, error } = await supabase
+        .from('perfiles_bot')
+        .delete()
+        .eq('telegram_id', telegram_id)
+        .select();
+
+    if (error) throw error;
+    return data;
+};
