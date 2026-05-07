@@ -48,7 +48,6 @@ export const obtenerInsumosUsadosPorID = async (number: number) => {
     id_insumo,
     dosis_aplicada,
     unidad_dosis,
-    responsable_mezcla,
     insumos_agricolas ( nombre_comercial )
   `)
   .eq('id_actividad', number);

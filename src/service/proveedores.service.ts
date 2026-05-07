@@ -35,8 +35,6 @@ export const obtenerInfoProvePorIDService = async (number: number) => {
     fecha_recepcion,
     lote_insumo,
     fecha_caducidad,
-    numero_factura,
-    responsable_recepcion,
     proveedores ( nombre_empresa )
   `)
   .eq('id_insumo_agricola', number);

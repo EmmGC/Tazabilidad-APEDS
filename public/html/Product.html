@@ -4,28 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/ProductInfo.css">
-    <title>Información del Producto | Trazabilidad</title>
+    <link rel="stylesheet" href="../css/Product.css">
+    <title>Trazabilidad de Producto | Dashboard</title>
 </head>
 
 <body>
     <!-- header -->
-    <div class="headerContainer">
-        <img src="../static/Logo trazabilidad.svg" alt="Logo">
-    </div>
+    
     
     <main id="mainContent">
+        <a href="#" id="readMoreBtn" class="read-more-btn">Leer más <span>&gt;</span></a>
         <div class="loadingScreen" id="loading">
             <span class="loader"></span>
         </div>
 
-        <h1 id="titleContainer">Cargando Información...</h1>
+        <h1 id="titleContainer">Cargando Trazabilidad...</h1>
         
         <div id="tablasContainer">
             <section class="section-card">
                 <h2>Cliente Final</h2>
                 <div class="table-responsive">
-                    <table id="clienteTable"></table>
+                    <table id="clienteFinalTable"></table>
                 </div>
             </section>
 
@@ -74,21 +73,21 @@
             <section class="section-card">
                 <h2>Aplicación de insumos</h2>
                 <div class="table-responsive">
-                    <table id="detAplicInsumosTable"></table>
+                    <table id="insumosTable"></table>
                 </div>
             </section>
 
             <section class="section-card">
                 <h2>Información del proveedor</h2>
                 <div class="table-responsive">
-                    <table id="recepInsumosTable"></table>
+                    <table id="proveedorTable"></table>
                 </div>
             </section>
         </div>
     </main>
 
     <!-- Scripts js -->
-    <script src="../JS/ProductInfo.js"></script>
+    <script src="../JS/Product.js"></script>
 </body>
 
 </html>

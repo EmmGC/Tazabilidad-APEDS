@@ -31,7 +31,7 @@ export const obtenerUPsService = async () => {
 export const obtenerUPporIDService = async (number: number) => {
   const { data, error } = await supabase
     .from('unidades_produccion')
-    .select('*')
+    .select('id_unidad, nombre_unidad, pais, estado, municipio, certificaciones')
     .eq("id_unidad", number)
 
   if (error) {

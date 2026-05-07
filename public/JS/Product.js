@@ -1,22 +1,25 @@
 let id = window.location.pathname.split('/')[2];
-let idTransporte = 0;
 let idSeccion = 0;
 
 const title = document.getElementById('titleContainer');
 title.innerHTML = "ID PRODUCTO: " + id;
 
-// Tablas en el documento
-const clienteTable = document.getElementById('clienteTable');
+const readMoreBtn = document.getElementById('readMoreBtn');
+if (readMoreBtn) {
+    readMoreBtn.href = `http://localhost:3001/ProductInfo/${id}`;
+}
+
+// Tablas
+const clienteFinalTable = document.getElementById('clienteFinalTable');
 const embarqueTable = document.getElementById('embarqueTable');
 const transporteTable = document.getElementById('transporteTable');
 const lotCosechaTable = document.getElementById('lotCoseTable');
 const seccionCultivoTable = document.getElementById('seccionCultivoTable');
 const uniProductTable = document.getElementById('uniProductTable');
 const bitActTable = document.getElementById('bitActTable');
-const detAplicInsumosTable = document.getElementById('detAplicInsumosTable');
-const recepInsumosTable = document.getElementById('recepInsumosTable');
+const insumosTable = document.getElementById('insumosTable');
+const proveedorTable = document.getElementById('proveedorTable');
 
-// Recursively flattens a nested object into dot-notation keys
 function flattenObject(obj, prefix = "") {
     return Object.entries(obj).reduce((acc, [key, value]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -29,7 +32,6 @@ function flattenObject(obj, prefix = "") {
     }, {});
 }
 
-// Formats a key into a readable column title
 function formatTitle(key) {
     return key
         .replace(/[-_.]/g, " ")
@@ -37,7 +39,7 @@ function formatTitle(key) {
 }
 
 function formatCellValue(key, value) {
-    // Manejo de Booleanos
+    // Manejo de Booleanos (Lavado, Desinfección, etc.)
     if (typeof value === "boolean") {
         return value ? '<span class="check-icon">✓</span>' : '<span class="false-icon">-</span>';
     }
@@ -56,9 +58,9 @@ function formatCellValue(key, value) {
 
 function populateTable(table, data) {
     try {
-        if (!data || (Array.isArray(data) && data.length === 0)) throw new Error("Sin datos");
         const rows = Array.isArray(data) ? data : [data];
-    
+        if (!data || (Array.isArray(data) && data.length === 0)) throw new Error("Sin datos");
+
         const flatRows = rows.map(row => flattenObject(row));
         const allKeys = [...new Set(flatRows.flatMap(row => Object.keys(row)))];
     
@@ -88,7 +90,7 @@ function populateTable(table, data) {
         table.appendChild(tbody);
     } catch (error) {
         if (table && table.closest('.section-card')) {
-            table.closest('.section-card').style.display = 'none';
+            table.closest('.section-card').style.display = 'none'; // Ocultar sección si no hay datos
         }
     }
 }
@@ -100,22 +102,23 @@ document.addEventListener('endLoad', (e) => {
     setTimeout(() => loading.style.display = 'none', 500);
 });
 
+// Cadena de Fetch
 fetch("/api/logistica-envios/getClientesPorID/"+id)
     .then(res => res.json())
     .then(data => {
-        if (!data[0]) throw new Error("No encontrado");
+        if (!data[0]) throw new Error("Producto no encontrado");
+        populateTable(clienteFinalTable, data[0]);
         const idCliente = data[0].id_cliente;
-        populateTable(clienteTable, data[0]);
-        
         return fetch("/api/logistica-envios/getEmbarquesPorID/" + idCliente);
     })
     .then(res => res.json())
     .then(data => {
-        if (!data[0]) throw new Error("No encontrado");
-        const idLote = data[0].id_lote;
-        idTransporte = data[0].id_transporte;
+        if (!data[0]) throw new Error("Embarque no encontrado");
         populateTable(embarqueTable, data);
+        const idLote = data[0].id_lote;
+        const idTransporte = data[0].id_transporte;
 
+        // Fetch Transporte y Lote en paralelo
         return Promise.all([
             fetch("/api/logistica-envios/getTransportesPorID/" + idTransporte).then(res => res.json()),
             fetch("/api/logistica-envios/getLotePorID/" + idLote).then(res => res.json())
@@ -125,14 +128,14 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
         populateTable(transporteTable, transporteData);
         populateTable(lotCosechaTable, loteData);
 
-        if (!loteData[0]) throw new Error("No encontrado");
+        if (!loteData[0]) throw new Error("Lote no encontrado");
         idSeccion = loteData[0].id_seccion;
 
         return fetch("/api/produccion/getSeccionCultivoPorID/" + idSeccion);
     })
     .then(res => res.json())
     .then(data => {
-        if (!data[0]) throw new Error("No encontrado");
+        if (!data[0]) throw new Error("Sección no encontrada");
         populateTable(seccionCultivoTable, data[0]);
         const idUnidad = data[0].id_unidad;
 
@@ -148,6 +151,7 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
         populateTable(bitActTable, data);
         
         if (data && data.length > 0) {
+            // Tomamos la primera actividad para buscar insumos (o podríamos iterar, pero por ahora simplificamos)
             const idActividad = data[0].id_actividad;
             return fetch("/api/insumos/getInsumosPorID/" + idActividad);
         }
@@ -158,7 +162,7 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
         return res.json();
     })
     .then(data => {
-        populateTable(detAplicInsumosTable, data);
+        populateTable(insumosTable, data);
         if (data && data.length > 0) {
             const idInsumo = data[0].id_insumo;
             return fetch("/api/logistica-insumos/getInfoProvePorID/" + idInsumo);
@@ -170,7 +174,7 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
         return res.json();
     })
     .then(data => {
-        populateTable(recepInsumosTable, data);
+        populateTable(proveedorTable, data);
         document.dispatchEvent(endLoading);
     })
     .catch(error => {
@@ -179,7 +183,7 @@ fetch("/api/logistica-envios/getClientesPorID/"+id)
         container.innerHTML = `
             <div class="section-card" style="text-align: center; padding: 4rem;">
                 <h2 style="justify-content: center; margin-bottom: 1rem;">Error de Trazabilidad</h2>
-                <p style="color: var(--text-secondary)">Ocurrió un error al cargar la información detallada.</p>
+                <p style="color: var(--text-secondary)">No se pudo recuperar la información para el ID: ${id}. Verifique que el código sea correcto.</p>
             </div>
         `;
         document.dispatchEvent(endLoading);

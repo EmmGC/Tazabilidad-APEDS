@@ -58,6 +58,10 @@ app.get('/ProductInfo/:id', (req, res) => {
   const { id } = req.params; 
   res.sendFile(path.join(__dirname, 'public', 'html','ProductInfo.html'));
 });
+//Nueva pagina de info resumida
+app.get('/Product/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html','Product.html'));
+});
 //Pagina para trazabilidad hacia adelante y atras
 app.get('/busqueda', async (req, res) => {
   const token = req.cookies?.access_token

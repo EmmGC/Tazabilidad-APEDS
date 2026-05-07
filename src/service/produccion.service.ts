@@ -13,7 +13,7 @@ export const getBitacoraPorIDService = async (number: number) => {
   const { data, error } = await supabase
     .from('bitacora_actividades')
     .select(`
-      *
+      id_actividad, id_seccion, fecha, tipo_actividad, lavado, desinfeccion, observaciones
     `)
     .eq("id_seccion", number);
 
@@ -131,7 +131,7 @@ export const getSeccionCultivoPorIDService = async (number: number) => {
   const { data, error } = await supabase
     .from('secciones_cultivo')
     .select(`
-      *
+      id_seccion, id_unidad, nombre_seccion, cultivo, variedad, fecha_siembra, fecha_estimada_cosecha
     `)
     .eq("id_seccion", number);
 

@@ -32,7 +32,7 @@ export const obtenerClientesService = async () => {
 export const obtenerClientesPorIDService = async (numero: number) => {
   const { data, error } = await supabase
     .from('clientes_destinos')
-    .select('*')
+    .select('id_cliente, nombre_empresa, pais, estado, municipio, marca_comercial, mercado_destino')
     .eq("id_cliente", numero)
 
   if (error) throw new Error(`Error al obtener Clientes: ${error.message}`);
@@ -68,7 +68,7 @@ export const obtenerTransportesService = async () => {
 export const obtenerTransportePorIDService = async (number:number) => {
   const { data, error } = await supabase
     .from('transportes')
-    .select('*')
+    .select('id_transporte, tipo_vehiculo, temperatura_min, temperatura_max, propietario, certificado_sanitario, ultima_revision')
     .eq("id_transporte", number)
 
   if (error) throw new Error(`Error al obtener Transportes: ${error.message}`);
@@ -127,10 +127,8 @@ export const obtenerEmbarquesPorIDService = async (number:number) => {
   .select(`
     id_transporte,
     id_lote,
-    cajas_transportadas,
     fecha_salida,
     fecha_llegada,
-    peso_transportado_kg,
     temperatura_salida,
     temperatura_llegada,
     incidencias,
@@ -146,7 +144,7 @@ export const obtenerEmbarquesPorIDService = async (number:number) => {
 export const obtenerLotesPorIDService = async (number:number) => {
   const { data, error } = await supabase
     .from('lotes_cosecha')
-    .select(`*`)
+    .select(`id_lote, id_seccion, fecha_cosecha, uso_cultivo, calidad, calibre, color, observaciones_calidad, codigo_trazabilidad`)
     .eq("id_lote", number)
 
   if (error) throw new Error(`Error al obtener Embarques: ${error.message}`);
