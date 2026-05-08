@@ -90,6 +90,15 @@ app.get('/editUsers', async (req, res) => {
 
   res.sendFile(path.join(__dirname, 'public', 'html', 'editUsuarios.html'))
 })
+//Pagina de manejo de usuarios de telegram
+app.get('/editTelegram', async (req, res) => {
+  const token = req.cookies?.access_token
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+
+  if (error || !user) return res.redirect('/')
+
+  res.sendFile(path.join(__dirname, 'public', 'html', 'editTelegram.html'))
+})
 
 //ruta logotut
 app.post('/logout', async (req, res) => {

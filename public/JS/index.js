@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data && data.session && data.user) {
                     console.log('Login exitoso:', data);
                     document.cookie = `access_token=${data.session.access_token}; path=/`
-                    localStorage.setItem('access_token', data.session.access_token)
+                    localStorage.setItem('access_token', data.session.access_token);
+                    localStorage.setItem('email', data.user.email);
+                    localStorage.setItem('name', data.user.user_metadata?.display_name || '');
                     window.location.href = '/busqueda'
                 } else {
                     // Esto debería ser raro si response.ok es true y el backend envía datos correctos

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { login, getAllUsersService, updateUserService, deleteUserService, createUserService} from '../service/usuarios.service';
+import { login, getAllUsersService, updateUserService, deleteUserService, createUserService, getAllTelegramUsersService, createTelegramUserService, updateTelegramUserService, deleteTelegramUserService} from '../service/usuarios.service';
 
 export const verificarUsuario = async (req: any, res: Response) => {
     try {
@@ -50,6 +50,49 @@ export const deleteUser = async (req: any, res: Response) => {
   try {
     const { userId } = req.body;
     const data = await deleteUserService(userId);
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// Telegram
+export const getAllTelegramUsers = async (req: any, res: Response) => {
+  try {
+    const catalogo = await getAllTelegramUsersService();
+    return res.status(200).json(catalogo);
+  } catch (error: any) {
+    console.error("[CONTROLLER] Error en obtener usuarios:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const createTelegramUser = async (req: any, res: Response) => {
+  try {
+    const { telegramId, nombre, tabla } = req.body;
+    const data = await createTelegramUserService(telegramId, nombre, tabla);
+    return res.status(201).json(data);
+  } catch (error: any) {
+    console.error("createTelegramUser error:", error); // log full error object
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateTelegramUser = async (req: any, res: Response) => {
+    try {
+        const { original_telegram_id, telegram_id, nombre, tabla_asignada } = req.body;
+        const data = await updateTelegramUserService(original_telegram_id, telegram_id, nombre, tabla_asignada);
+        return res.status(200).json(data);
+    } catch (error: any) {
+        console.error("updateTelegramUser error:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const deleteTelegramUser  = async (req: any, res: Response) => {
+  try {
+    const { activeUserId  } = req.body;
+    const data = await deleteTelegramUserService(activeUserId );
     return res.status(200).json(data);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
