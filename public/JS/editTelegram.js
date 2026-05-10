@@ -129,7 +129,7 @@ document.getElementById('btnSaveUser').addEventListener('click', async () => {
             },
             body: JSON.stringify({ telegramId, nombre, tabla })
         });
-
+        location.reload();
         return await response.json();
     } else {
         const response = await fetch('/api/userAuth/updateTelegram', {
